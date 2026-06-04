@@ -1,0 +1,4782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#08080f">
+<title>Nemesis — Game Master</title>
+<style>
+  :root {
+    --bg:        #08080f;
+    --panel:     #0f0f1c;
+    --header:    #0c0012;
+    --accent:    #7a0000;
+    --accent2:   #cc2200;
+    --text:      #d8d0c0;
+    --text-dim:  #706860;
+    --text-hi:   #ffffff;
+    --btn-bg:    #14102a;
+    --btn-hov:   #22184a;
+    --btn-bord:  #6a0000;
+    --btn-hbord: #cc2200;
+    --title-fg:  #ff5555;
+    --nav-bg:    #0c0c18;
+    --nav-bord:  #2a0820;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── header ── */
+  header {
+    background: var(--header);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--accent);
+    flex-shrink: 0;
+  }
+  header .brand {
+    color: #cc4444;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    font-weight: bold;
+  }
+  header .nav-btns {
+    display: flex;
+    gap: 8px;
+  }
+  header button {
+    background: transparent;
+    border: 1px solid #3a1030;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 0.7rem;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  header button:hover { color: var(--text-hi); border-color: var(--accent2); }
+
+  /* ── main content area ── */
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px 32px;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* ── screen title ── */
+  #screen-title {
+    color: var(--title-fg);
+    font-size: clamp(1.3rem, 5vw, 1.9rem);
+    font-weight: bold;
+    white-space: pre-line;
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+
+  .divider {
+    height: 2px;
+    background: var(--accent);
+    margin: 0 0 16px;
+    border-radius: 1px;
+  }
+
+  /* ── body text ── */
+  #screen-text {
+    white-space: pre-line;
+    font-size: clamp(0.78rem, 2.5vw, 0.92rem);
+    line-height: 1.65;
+    color: var(--text);
+    margin-bottom: 22px;
+  }
+
+  /* ── option buttons ── */
+  #options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .opt-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: clamp(0.75rem, 2.3vw, 0.88rem);
+    font-weight: bold;
+    background: var(--btn-bg);
+    color: var(--text);
+    border: 1px solid var(--btn-bord);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .12s, border-color .12s, color .12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .opt-btn:hover, .opt-btn:active {
+    background: var(--btn-hov);
+    border-color: var(--btn-hbord);
+    color: var(--text-hi);
+  }
+  .opt-btn.nav {
+    background: var(--nav-bg);
+    color: var(--text-dim);
+    border-color: var(--nav-bord);
+    font-weight: normal;
+  }
+  .opt-btn.nav:hover, .opt-btn.nav:active {
+    background: var(--btn-hov);
+    color: var(--text-hi);
+    border-color: #6a2040;
+  }
+
+  /* ── footer breadcrumb ── */
+  footer {
+    background: var(--header);
+    padding: 8px 16px;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    border-top: 1px solid #1a0818;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+  }
+
+  /* ── scroll-to-top on navigation ── */
+  html { scroll-behavior: smooth; }
+
+  /* ── mobile: slightly larger tap targets ── */
+  @media (max-width: 480px) {
+    .opt-btn { padding: 14px 14px; }
+    main { padding: 14px 12px 40px; }
+  }
+
+  /* ── warning / good colour helpers ── */
+  .warn { color: #ff8800; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">◈ NEMESIS GAME MASTER ◈</span>
+  <div class="nav-btns">
+    <button id="btn-back" onclick="goBack()">◀ BACK</button>
+    <button id="btn-home" onclick="goHome()">⌂ HOME</button>
+  </div>
+</header>
+
+<main id="main-content">
+  <div id="screen-title"></div>
+  <div class="divider"></div>
+  <div id="screen-text"></div>
+  <div id="options"></div>
+</main>
+
+<footer id="breadcrumb">/home</footer>
+
+<script>
+// ── Screen data (auto-generated) ────────────────────────────────────────────
+const SCREENS = {
+  "home": {
+    "title": "NEMESIS\nGAME MASTER",
+    "text": "Your guide through the darkness.\nSelect a category.",
+    "options": [
+      {
+        "label": "ROUND SEQUENCE",
+        "target": "round_sequence"
+      },
+      {
+        "label": "PLAYER ACTIONS",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "MOVEMENT & DOORS",
+        "target": "movement_menu"
+      },
+      {
+        "label": "NOISE CHECKS",
+        "target": "noise_check_menu"
+      },
+      {
+        "label": "INTRUDER ENCOUNTER",
+        "target": "encounter_menu"
+      },
+      {
+        "label": "COMBAT",
+        "target": "combat_menu"
+      },
+      {
+        "label": "EVENT PHASE",
+        "target": "event_phase_menu"
+      },
+      {
+        "label": "FIRE",
+        "target": "fire_menu"
+      },
+      {
+        "label": "CONTAMINATION",
+        "target": "contamination_menu"
+      },
+      {
+        "label": "WOUNDS & STATUS",
+        "target": "status_menu"
+      },
+      {
+        "label": "GAME END",
+        "target": "game_end_menu"
+      },
+      {
+        "label": "CHARACTER ABILITIES",
+        "target": "char_hub"
+      },
+      {
+        "label": "WEAPON ABILITIES",
+        "target": "weapon_hub"
+      },
+      {
+        "label": "IN-COMBAT RULES",
+        "target": "in_combat_restrictions"
+      },
+      {
+        "label": "INTRUDER ATTACK TARGET",
+        "target": "intruder_attack_target"
+      },
+      {
+        "label": "ESCAPE PODS",
+        "target": "escape_pods_rules"
+      },
+      {
+        "label": "HIBERNATION",
+        "target": "hibernation_rules"
+      },
+      {
+        "label": "SELF-DESTRUCT",
+        "target": "self_destruct_rules"
+      }
+    ]
+  },
+  "round_sequence": {
+    "title": "ROUND SEQUENCE",
+    "text": "Each turn follows this exact order:\n\n① DRAW ACTION CARDS\n   ALL players draw until they have 5 cards.\n   Empty deck → shuffle discard into new deck.\n\n② PASS FIRST PLAYER TOKEN LEFT\n   (Skip on the very first turn.)\n\n③ PLAYER ROUNDS\n   Starting with First Player, clockwise.\n   Each player takes 2 Actions, then passes.\n   A passed player cannot act again this phase.\n   Fire damage: 1 Light Wound when you END\n   your round in a room with a Fire marker.\n\n④ EVENT PHASE\n   See EVENT PHASE for full details.",
+    "options": [
+      {
+        "label": "PLAYER ACTIONS",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "EVENT PHASE",
+        "target": "event_phase_menu"
+      },
+      {
+        "label": "PASSING RULES",
+        "target": "passing_rules"
+      },
+      {
+        "label": "IN-COMBAT ACTIONS",
+        "target": "in_combat_restrictions"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "player_actions_menu": {
+    "title": "PLAYER ACTIONS",
+    "text": "Each player takes 2 Actions per round.\nActions are paid for with Action Cards from hand.\n\n⚠ IN COMBAT: you can ONLY fight (Shoot / Melee)\n  or escape (basic Move). Nothing else allowed.\n\nWhat action are you taking?",
+    "options": [
+      {
+        "label": "MOVE",
+        "target": "action_move"
+      },
+      {
+        "label": "CAREFUL MOVE",
+        "target": "action_careful_move"
+      },
+      {
+        "label": "ATTACK",
+        "target": "action_attack"
+      },
+      {
+        "label": "SEARCH",
+        "target": "action_search"
+      },
+      {
+        "label": "PICK UP ITEM",
+        "target": "action_pickup"
+      },
+      {
+        "label": "USE ITEM",
+        "target": "action_use_item"
+      },
+      {
+        "label": "REST",
+        "target": "action_rest"
+      },
+      {
+        "label": "CRAFT ITEM",
+        "target": "action_craft"
+      },
+      {
+        "label": "TRADE",
+        "target": "action_trade"
+      },
+      {
+        "label": "PASS ROUND",
+        "target": "passing_rules"
+      },
+      {
+        "label": "IN-COMBAT ACTIONS",
+        "target": "in_combat_restrictions"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "action_move": {
+    "title": "ACTION: MOVE",
+    "text": "COST: 1 Action Token\n\nSteps:\n1. Declare the adjacent room or corridor you're\n   moving into.\n2. If the door is CLOSED → opening it costs\n   1 separate Action Token first.\n3. Move your figure to the new location.\n4. Make a NOISE CHECK in the destination room.\n\nAre you using a character movement ability?",
+    "options": [
+      {
+        "label": "SCOUT: RECONNAISSANCE  (no noise)",
+        "target": "ability_reconnaissance"
+      },
+      {
+        "label": "PILOT: COMPUTER SKILLS  (free door/room)",
+        "target": "ability_computer_skills"
+      },
+      {
+        "label": "CAPTAIN: ORDER  (move another player)",
+        "target": "ability_order"
+      },
+      {
+        "label": "NO ABILITY — standard move",
+        "target": "move_standard"
+      },
+      {
+        "label": "BACK",
+        "target": "player_actions_menu"
+      }
+    ]
+  },
+  "move_standard": {
+    "title": "MOVE — WHERE?",
+    "text": "Is there an intruder in the destination room?",
+    "options": [
+      {
+        "label": "YES — INTRUDER THERE",
+        "target": "encounter_on_entry"
+      },
+      {
+        "label": "NO — MAKE NOISE CHECK",
+        "target": "noise_roll"
+      },
+      {
+        "label": "DOOR IS CLOSED FIRST",
+        "target": "action_open_door"
+      },
+      {
+        "label": "BACK",
+        "target": "action_move"
+      }
+    ]
+  },
+  "action_careful_move": {
+    "title": "ACTION: CAREFUL MOVE",
+    "text": "COST: 1 Action Token\n\nMove to an adjacent room WITHOUT making a\nNoise Check — no noise token, no die roll.\n\nRules:\n• Still triggers an encounter if an intruder\n  is already in the destination room.\n• Still requires opening a closed door first.\n\nIs there an intruder in the destination room?",
+    "options": [
+      {
+        "label": "YES — INTRUDER THERE",
+        "target": "encounter_on_entry"
+      },
+      {
+        "label": "NO — MOVE SILENTLY",
+        "target": "careful_move_done"
+      },
+      {
+        "label": "BACK",
+        "target": "player_actions_menu"
+      }
+    ]
+  },
+  "careful_move_done": {
+    "title": "CAREFUL MOVE — COMPLETE",
+    "text": "✓ You move silently to the new room.\n✓ No noise check required.\n✓ No noise token placed.\n\nContinue your turn.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "action_open_door": {
+    "title": "ACTION: OPEN DOOR",
+    "text": "COST: 1 Action Token\n\nSteps:\n1. Spend 1 Action Token to open the door.\n2. Flip the door token to the OPEN side.\n3. Make a NOISE CHECK in the corridor.\n4. The door stays open for the rest of the game.\n\nAfter opening, you may move through it\nby spending another Action Token.",
+    "options": [
+      {
+        "label": "NOW MOVE THROUGH",
+        "target": "action_move"
+      },
+      {
+        "label": "NOISE CHECK",
+        "target": "noise_roll"
+      },
+      {
+        "label": "BACK",
+        "target": "movement_menu"
+      }
+    ]
+  },
+  "action_attack": {
+    "title": "ACTION: ATTACK",
+    "text": "COST: 1 Action Token\n\nYou must be in the same room as the intruder\n(or adjacent for ranged weapons).\n\nWhat type of weapon are you using?",
+    "options": [
+      {
+        "label": "MELEE WEAPON",
+        "target": "combat_melee"
+      },
+      {
+        "label": "RANGED WEAPON",
+        "target": "combat_ranged"
+      },
+      {
+        "label": "BACK",
+        "target": "player_actions_menu"
+      }
+    ]
+  },
+  "action_search": {
+    "title": "ACTION: SEARCH",
+    "text": "COST: 1 Action Token\n\nRules:\n• Each room can only be searched ONCE per game.\n  Place a Search Marker after searching.\n• If there is a Search Marker already, you\n  cannot search this room again.\n\n⚠ If an intruder is in the room:\n  Searching TRIGGERS AN ENCOUNTER first!\n\nAre you using a character search ability?",
+    "options": [
+      {
+        "label": "SCOUT: SCAVENGING  (search already-searched room)",
+        "target": "ability_scavenging"
+      },
+      {
+        "label": "SCOUT: SCAVENGER TRAIT  (draw from all 3 decks)",
+        "target": "ability_scavenger_trait"
+      },
+      {
+        "label": "NO ABILITY — standard search",
+        "target": "search_standard"
+      },
+      {
+        "label": "BACK",
+        "target": "player_actions_menu"
+      }
+    ]
+  },
+  "search_standard": {
+    "title": "SEARCH — STANDARD",
+    "text": "Is there an intruder in this room?",
+    "options": [
+      {
+        "label": "YES — ENCOUNTER FIRST",
+        "target": "encounter_same_room"
+      },
+      {
+        "label": "NO — SEARCH SAFELY",
+        "target": "search_draw_item"
+      },
+      {
+        "label": "BACK",
+        "target": "action_search"
+      }
+    ]
+  },
+  "search_draw_item": {
+    "title": "SEARCH — DRAW ITEM",
+    "text": "White Room (first search): Draw 2 cards from\nany ONE colour deck (e.g. 2 red, 2 green, or\n2 yellow — never mix colours). Keep 1.\nPlace the rejected card on the BOTTOM of its deck\n(do NOT shuffle it back in).\n\nColoured Room: Draw 1 card from that colour deck.\n\nAfter drawing, place a Search Token here.\n\nDid the kept item have a contamination symbol?",
+    "options": [
+      {
+        "label": "YES — TAKE CONTAMINATION CARD",
+        "target": "contamination_take_card"
+      },
+      {
+        "label": "NO — ALL GOOD",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "action_pickup": {
+    "title": "ACTION: PICK UP ITEM",
+    "text": "COST: 1 Action Token\n\nPick up any item lying in your current room\n(including items dropped by dead players).\n\n⚠ If an intruder is in the room:\n  Picking up TRIGGERS AN ENCOUNTER!\n\nIs there an intruder in this room?",
+    "options": [
+      {
+        "label": "YES — ENCOUNTER FIRST",
+        "target": "encounter_same_room"
+      },
+      {
+        "label": "NO — PICK UP",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK",
+        "target": "player_actions_menu"
+      }
+    ]
+  },
+  "action_use_item": {
+    "title": "ACTION: USE ITEM",
+    "text": "COST: 1 Action Token\n\n• Read the card — follow its instructions exactly.\n• Single-use items: discard after use.\n• Reusable items: keep them.\n\nCommon items:\n  Medkit         → Discard wound cards\n  Fire Extinguisher → Remove fire token\n  Scanner        → Reveal contamination card\n  Flamethrower   → Attack with fire\n  Keycard        → Access locked rooms\n  Stun Grenade   → Stun intruder\n\nFollow the item card. No other steps.",
+    "options": [
+      {
+        "label": "USING SCANNER",
+        "target": "use_scanner"
+      },
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "use_scanner": {
+    "title": "USING THE SCANNER",
+    "text": "The Scanner lets you check contamination.\n\nSteps:\n1. Spend 1 Action Token.\n2. Choose a player in the same room\n   (can be yourself).\n3. That player flips their contamination\n   card face up.\n\nWhat does the contamination card show?",
+    "options": [
+      {
+        "label": "INFECTED",
+        "target": "contamination_infected"
+      },
+      {
+        "label": "CLEAN",
+        "target": "contamination_clean"
+      },
+      {
+        "label": "NO CARD",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "action_rest": {
+    "title": "ACTION: REST",
+    "text": "COST: 1 Action Card from hand\n\nEffects:\n• Heal LIGHT WOUNDS or remove a DRESSED\n  Serious Wound card.\n• Also SCANS all your Contamination cards.\n\nCONTAMINATION SCAN on Rest:\n• If at least 1 card is INFECTED:\n  → Place a Larva on your Character board.\n  → Does NOT matter how many are infected.\n• If you ALREADY HAVE a Larva on your board:\n  → Rest can kill you! (Larva activates.)\n\nDo you have Contamination cards?",
+    "options": [
+      {
+        "label": "YES — SCAN CONTAMINATION",
+        "target": "rest_contamination_scan"
+      },
+      {
+        "label": "NO — HEAL NORMALLY",
+        "target": "rest_standard"
+      },
+      {
+        "label": "BACK",
+        "target": "player_actions_menu"
+      }
+    ]
+  },
+  "rest_contamination_scan": {
+    "title": "REST — CONTAMINATION SCAN",
+    "text": "You must scan ALL your Contamination cards.\n\nDo you already have a LARVA on your board?",
+    "options": [
+      {
+        "label": "YES — LARVA ALREADY ON BOARD",
+        "target": "rest_larva_danger"
+      },
+      {
+        "label": "NO — SCANNING NOW",
+        "target": "rest_scan_result"
+      },
+      {
+        "label": "BACK",
+        "target": "action_rest"
+      }
+    ]
+  },
+  "rest_larva_danger": {
+    "title": "REST WITH LARVA — DANGER",
+    "text": "⚠ You have a Larva on your board!\n\nUsing Rest while a Larva is on your board\nwill cause the Larva to ACTIVATE.\n\nThis can kill your character.\n\nAre you sure you want to Rest?",
+    "options": [
+      {
+        "label": "YES — RESOLVE LARVA ACTIVATION",
+        "target": "rest_larva_activates"
+      },
+      {
+        "label": "NO — CHOOSE DIFFERENT ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "rest_larva_activates": {
+    "title": "LARVA ACTIVATES",
+    "text": "The larva bursts from your body!\n\nSteps:\n1. Remove the Larva token from your Character board.\n2. Place a LARVA MINIATURE in your current room.\n3. You suffer wounds (check your card for amount).\n4. An Encounter begins immediately.\n\nThe larva is now an active intruder!",
+    "options": [
+      {
+        "label": "TAKE WOUNDS",
+        "target": "wound_apply"
+      },
+      {
+        "label": "ENCOUNTER WITH LARVA",
+        "target": "encounter_draw_surprise"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "rest_scan_result": {
+    "title": "REST — SCAN RESULT",
+    "text": "Scan your Contamination cards.\n\nIs at least one card INFECTED?",
+    "options": [
+      {
+        "label": "YES — AT LEAST 1 INFECTED",
+        "target": "contamination_larva_on_board"
+      },
+      {
+        "label": "NONE INFECTED — ALL CLEAR",
+        "target": "rest_standard"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "rest_standard": {
+    "title": "REST — HEAL",
+    "text": "✓ No contamination danger.\n\nChoose one:\n• Remove 1 LIGHT WOUND marker from your board.\n• OR discard a DRESSED Serious Wound card.\n\n⚠ Cannot rest if an intruder is in the room!\n\nIs there an intruder in this room?",
+    "options": [
+      {
+        "label": "YES — CANNOT REST",
+        "target": "rest_blocked"
+      },
+      {
+        "label": "NO — HEAL DONE",
+        "target": "rest_done"
+      },
+      {
+        "label": "BACK",
+        "target": "action_rest"
+      }
+    ]
+  },
+  "rest_blocked": {
+    "title": "CANNOT REST",
+    "text": "⚠ You cannot rest while an intruder\n  is in the same room!\n\nOptions:\n• Fight the intruder.\n• Escape to another room, then rest.\n• Take a different action.",
+    "options": [
+      {
+        "label": "FIGHT",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "OTHER",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "rest_done": {
+    "title": "REST — COMPLETE",
+    "text": "✓ Remove 1 Weakness Card from your wound area.\n✓ Discard it.\n\nContinue your turn.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "action_craft": {
+    "title": "ACTION: CRAFT",
+    "text": "COST: 1 Action Token\n\nCombine 2 compatible items to make something better.\n\nSteps:\n1. Both components must be in your hand.\n2. Check the Crafting Reference card for valid\n   combinations.\n3. Discard both component cards.\n4. Take the crafted item card.\n\nSome character boards give crafting bonuses —\ncheck yours!",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "movement_menu": {
+    "title": "MOVEMENT & DOORS",
+    "text": "What do you need help with?",
+    "options": [
+      {
+        "label": "MOVE ACTION",
+        "target": "action_move"
+      },
+      {
+        "label": "CAREFUL MOVE",
+        "target": "action_careful_move"
+      },
+      {
+        "label": "OPENING A DOOR",
+        "target": "action_open_door"
+      },
+      {
+        "label": "NOISE CHECK",
+        "target": "noise_check_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "noise_check_menu": {
+    "title": "NOISE CHECKS",
+    "text": "When is a noise check needed?",
+    "options": [
+      {
+        "label": "AFTER MOVING (normal move)",
+        "target": "noise_roll"
+      },
+      {
+        "label": "OPENING A DOOR",
+        "target": "noise_roll"
+      },
+      {
+        "label": "WHAT TRIGGERS NOISE?",
+        "target": "noise_triggers"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "noise_triggers": {
+    "title": "WHAT TRIGGERS NOISE?",
+    "text": "A Noise Check is required after:\n\n• Normal MOVE action (in destination room)\n• Opening a DOOR (in the corridor)\n• Certain items and attacks\n• Being instructed by an event or room card\n\nA Noise Check is NOT required after:\n• CAREFUL MOVE action\n• Picking up items (unless specified)\n• Resting\n• Using most items",
+    "options": [
+      {
+        "label": "MAKE NOISE CHECK NOW",
+        "target": "noise_roll"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "noise_roll": {
+    "title": "NOISE CHECK — ROLL THE DIE",
+    "text": "Roll the NOISE DIE.\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "INTRUDER SYMBOL  🐛",
+        "target": "noise_result_intruder"
+      },
+      {
+        "label": "NUMBER  (1 – 6)",
+        "target": "noise_result_number"
+      },
+      {
+        "label": "SILENCE  ✦",
+        "target": "noise_result_silence"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "noise_result_intruder": {
+    "title": "NOISE: INTRUDER SYMBOL!",
+    "text": "An intruder is drawn to the noise!\n\nSteps:\n1. Remove ALL noise tokens from the entire board.\n2. Draw the top card from the INTRUDER BAG.\n3. Spawn that intruder type in the corridor\n   where noise was made.\n4. The intruder immediately moves toward the\n   nearest player.\n\n⚠ If the intruder enters a room with a player:\n  AN ENCOUNTER BEGINS IMMEDIATELY!",
+    "options": [
+      {
+        "label": "INTRUDER ENTERS MY ROOM",
+        "target": "encounter_on_entry"
+      },
+      {
+        "label": "INTRUDER GOES ELSEWHERE",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "noise_result_number": {
+    "title": "NOISE: NUMBER RESULT",
+    "text": "Place a NOISE TOKEN in the numbered corridor\nmatching what you rolled.\n\n• Corridors are numbered on the game board.\n• If there is already a noise token in that\n  corridor, check your edition's rules —\n  usually move the existing token one space.\n\nTokens remain until an Intruder Symbol is\nrolled, then ALL are removed and an intruder\nspawns.",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      },
+      {
+        "label": "ROLL AGAIN (another)",
+        "target": "noise_roll"
+      }
+    ]
+  },
+  "noise_result_silence": {
+    "title": "NOISE: SILENCE",
+    "text": "✓ You moved quietly — nothing happens.\n\nNo noise token placed.\nNo intruder spawned.\n\nContinue your turn.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "encounter_menu": {
+    "title": "INTRUDER ENCOUNTER",
+    "text": "How did the encounter start?",
+    "options": [
+      {
+        "label": "I ENTERED A ROOM WITH AN INTRUDER",
+        "target": "encounter_on_entry"
+      },
+      {
+        "label": "INTRUDER ENTERED MY ROOM",
+        "target": "encounter_intruder_enters"
+      },
+      {
+        "label": "I'M IN THE ROOM, DOING AN ACTION",
+        "target": "encounter_same_room"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "encounter_on_entry": {
+    "title": "ENCOUNTER: ENTERING THE ROOM",
+    "text": "You moved into a room with an intruder!\n\nSTOP — movement ends immediately.\n\nDo you have a character ability that changes\nhow this encounter starts?",
+    "options": [
+      {
+        "label": "SOLDIER: NERVES OF STEEL  (ignore surprise)",
+        "target": "ability_nerves_of_steel"
+      },
+      {
+        "label": "NO ABILITY — draw Surprise Card",
+        "target": "encounter_draw_surprise"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "encounter_intruder_enters": {
+    "title": "ENCOUNTER: INTRUDER ENTERS",
+    "text": "An intruder has moved into your room!\n\nDo you have a character ability that changes\nhow this encounter starts?",
+    "options": [
+      {
+        "label": "SOLDIER: NERVES OF STEEL  (ignore surprise)",
+        "target": "ability_nerves_of_steel"
+      },
+      {
+        "label": "NO ABILITY — draw Surprise Card",
+        "target": "encounter_draw_surprise"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "encounter_same_room": {
+    "title": "ENCOUNTER: TRIGGERED BY ACTION",
+    "text": "Certain actions trigger an encounter when an\nintruder is in the same room:\n• Picking up an item\n• Searching the room\n• Using certain items\n\nDo you have a character ability that applies?",
+    "options": [
+      {
+        "label": "SOLDIER: NERVES OF STEEL  (ignore surprise)",
+        "target": "ability_nerves_of_steel"
+      },
+      {
+        "label": "NO ABILITY — draw Surprise Card",
+        "target": "encounter_draw_surprise"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "encounter_draw_surprise": {
+    "title": "DRAW INTRUDER TOKEN",
+    "text": "Draw 1 token from the INTRUDER BAG.\n\nWhat did you draw?",
+    "options": [
+      {
+        "label": "NUMBERED TOKEN",
+        "target": "encounter_token_number"
+      },
+      {
+        "label": "BLANK TOKEN",
+        "target": "encounter_blank_token"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "encounter_token_number": {
+    "title": "SURPRISE CHECK",
+    "text": "Compare the token's NUMBER to the number of\nACTION CARDS currently in your HAND.\n\nCount your hand now.\n\nHand size vs token number?",
+    "options": [
+      {
+        "label": "HAND SIZE <  TOKEN NUMBER → SURPRISE!",
+        "target": "encounter_surprised"
+      },
+      {
+        "label": "HAND SIZE >= TOKEN NUMBER → NO SURPRISE",
+        "target": "encounter_no_surprise"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_draw_surprise"
+      }
+    ]
+  },
+  "encounter_no_surprise": {
+    "title": "NO SURPRISE — PLAYER ACTS FIRST",
+    "text": "Your hand size was large enough — no surprise!\n\nYou act first. Choose:",
+    "options": [
+      {
+        "label": "FIGHT THE INTRUDER",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE THE ROOM",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "DO NOTHING — WAIT",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "encounter_blank_token": {
+    "title": "BLANK TOKEN",
+    "text": "You drew a BLANK token.\n\nSteps:\n1. Place noise markers in ALL corridors\n   connected to this room.\n2. Return the blank token to the bag immediately.\n\nWas this the LAST token in the bag?",
+    "options": [
+      {
+        "label": "YES — LAST TOKEN",
+        "target": "encounter_blank_last"
+      },
+      {
+        "label": "NO — BAG HAD MORE",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "encounter_blank_last": {
+    "title": "BLANK — LAST TOKEN",
+    "text": "The blank was the last token in the bag.\n\nSteps:\n1. Add 1 ADULT token to the Intruder bag.\n2. Return the blank token to the bag.\n\nNo intruder spawns this encounter — but\nthe bag now has a new Adult ready.",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "encounter_surprised": {
+    "title": "SURPRISE ATTACK!",
+    "text": "The intruder attacks with SURPRISE!\n\nThe player CANNOT react, fight back, or escape.\n\nDraw 1 INTRUDER ATTACK CARD.\nWhich intruder is attacking?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "atk_surprised_larva"
+      },
+      {
+        "label": "CREEPER",
+        "target": "atk_surprised_creeper"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "atk_surprised_adult"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "atk_surprised_queen"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "encounter_not_surprised": {
+    "title": "INTRUDER ATTACKS",
+    "text": "The intruder attacks — you are NOT surprised.\n\nDraw 1 INTRUDER ATTACK CARD.\nAfter taking damage you may fight back or escape.\n\nWhich intruder is attacking?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "atk_notsurprised_larva"
+      },
+      {
+        "label": "CREEPER",
+        "target": "atk_notsurprised_creeper"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "atk_notsurprised_adult"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "atk_notsurprised_queen"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "encounter_player_first": {
+    "title": "PLAYER ACTS FIRST",
+    "text": "You were not surprised — you act first!\n\nChoose your action. Each costs 1 Action Token:",
+    "options": [
+      {
+        "label": "FIGHT THE INTRUDER",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE THE ROOM",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "DO NOTHING — END",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "escape_attempt": {
+    "title": "ESCAPE ATTEMPT",
+    "text": "COST: 1 Action Token\n\nAre you using a character ability to escape?",
+    "options": [
+      {
+        "label": "CAPTAIN: SUPPRESSIVE FIRE  (guaranteed escape)",
+        "target": "ability_suppressive_fire"
+      },
+      {
+        "label": "SCOUT: SUPPRESSIVE FIRE    (guaranteed escape)",
+        "target": "ability_suppressive_fire"
+      },
+      {
+        "label": "SOLDIER: COVERING FIRE     (escape + 1 ammo)",
+        "target": "ability_covering_fire"
+      },
+      {
+        "label": "SCOUT: ADRENALINE          (escape + draw card)",
+        "target": "ability_adrenaline_escape"
+      },
+      {
+        "label": "NO ABILITY — standard escape",
+        "target": "escape_standard"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "escape_standard": {
+    "title": "ESCAPE — STANDARD",
+    "text": "COST: Basic Move Action (not Careful Move!)\n\n⚠ MULTIPLE INTRUDERS: Draw 1 Attack Card per\n  intruder in the room, largest first\n  (Queen → Breeder → Adult → Larva).\n\nSteps:\n1. Declare you are escaping.\n2. Draw 1 Intruder Attack Card PER intruder.\n   • Escape shown → that intruder doesn't attack.\n   • Attack shown → apply that intruder's damage.\n3. If you survive, move to ANY adjacent room.\n4. Make a NOISE CHECK in that room.\n\nHow many intruders are in the room?",
+    "options": [
+      {
+        "label": "1 INTRUDER",
+        "target": "escape_one_intruder"
+      },
+      {
+        "label": "2+ INTRUDERS",
+        "target": "escape_multi_intruder"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "escape_one_intruder": {
+    "title": "ESCAPE — 1 INTRUDER",
+    "text": "Draw 1 Intruder Attack Card.\n\nWhat does it show?",
+    "options": [
+      {
+        "label": "ESCAPE SYMBOL — FLED SAFELY",
+        "target": "noise_roll"
+      },
+      {
+        "label": "ATTACK SYMBOL — WHICH INTRUDER?",
+        "target": "escape_attack_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "escape_multi_intruder": {
+    "title": "ESCAPE — MULTIPLE INTRUDERS",
+    "text": "Draw 1 Attack Card per intruder.\nResolve in order: Queen → Breeder → Adult → Larva.\n\nFor each card drawn:\n• Escape symbol → that intruder doesn't attack.\n• Attack symbol → apply that intruder's damage.\n\nResolve all attacks, then if you survive, move.\n\nDid you survive all attacks?",
+    "options": [
+      {
+        "label": "YES — MOVE TO ADJACENT ROOM",
+        "target": "noise_roll"
+      },
+      {
+        "label": "TOOK WOUNDS",
+        "target": "wound_apply"
+      },
+      {
+        "label": "TOOK SERIOUS WOUND",
+        "target": "wound_serious"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "escape_attack_type": {
+    "title": "ESCAPE: HIT WHILE FLEEING",
+    "text": "The intruder strikes as you flee!\n\nWhich intruder is it?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "CREEPER",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "combat_menu": {
+    "title": "COMBAT",
+    "text": "What combat situation are you in?",
+    "options": [
+      {
+        "label": "PLAYER ATTACKS INTRUDER",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "INTRUDER ATTACKS PLAYER",
+        "target": "combat_intruder_attacks"
+      },
+      {
+        "label": "MELEE WEAPON RULES",
+        "target": "combat_melee"
+      },
+      {
+        "label": "RANGED WEAPON RULES",
+        "target": "combat_ranged"
+      },
+      {
+        "label": "KILLING AN INTRUDER",
+        "target": "combat_kill"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "combat_player_attacks": {
+    "title": "PLAYER ATTACKS — SELECT WEAPON",
+    "text": "COST: 1 Action Token\n\nAre you using a special weapon or character\ncombat ability?",
+    "options": [
+      {
+        "label": "SOLDIER: TAKING AIM  (reroll 1 die)",
+        "target": "ability_taking_aim"
+      },
+      {
+        "label": "SOLDIER: FULL AUTO   (spend all ammo)",
+        "target": "ability_full_auto"
+      },
+      {
+        "label": "PILOT: IMPROVISED WEAPON  (heavy item = 1 dmg)",
+        "target": "ability_improvised_weapon"
+      },
+      {
+        "label": "WEAPON: GRENADE",
+        "target": "weapon_grenade"
+      },
+      {
+        "label": "WEAPON: SMOKE GRENADE",
+        "target": "weapon_smoke_grenade"
+      },
+      {
+        "label": "WEAPON: FLAMETHROWER",
+        "target": "weapon_flamethrower"
+      },
+      {
+        "label": "STANDARD MELEE WEAPON",
+        "target": "combat_melee"
+      },
+      {
+        "label": "STANDARD RANGED WEAPON",
+        "target": "combat_ranged"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_menu"
+      }
+    ]
+  },
+  "combat_melee": {
+    "title": "MELEE — DRAW CONTAMINATION FIRST",
+    "text": "MELEE WEAPONS — No ammo cost.\nMust be in the SAME ROOM as the intruder.\n\n⚠ BEFORE rolling: Draw 1 CONTAMINATION CARD.\n  Keep it face down — you risk infection.\n\nNow check your weapon card.\nHow many dice does it show?",
+    "options": [
+      {
+        "label": "1 DIE",
+        "target": "roll_melee_1"
+      },
+      {
+        "label": "2 DICE",
+        "target": "roll_melee_2"
+      },
+      {
+        "label": "3 DICE",
+        "target": "roll_melee_3"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_player_attacks"
+      }
+    ]
+  },
+  "roll_melee_1": {
+    "title": "MELEE — ROLL 1 DIE",
+    "text": "Roll 1 combat die.\n\n⚠ MISS = 1 Serious Wound on YOU (the attacker).\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "MISS  (0 hits) — YOU take serious wound",
+        "target": "melee_miss_attacker"
+      },
+      {
+        "label": "1 HIT",
+        "target": "melee_hit_check"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_melee"
+      }
+    ]
+  },
+  "roll_melee_2": {
+    "title": "MELEE — ROLL 2 DICE",
+    "text": "Roll 2 combat dice.\n\n⚠ MISS = 1 Serious Wound on YOU (the attacker).\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "MISS  (0 hits) — YOU take serious wound",
+        "target": "melee_miss_attacker"
+      },
+      {
+        "label": "1 HIT",
+        "target": "melee_hit_check"
+      },
+      {
+        "label": "2 HITS",
+        "target": "melee_hit_check_2"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_melee"
+      }
+    ]
+  },
+  "roll_melee_3": {
+    "title": "MELEE — ROLL 3 DICE",
+    "text": "Roll 3 combat dice.\n\n⚠ MISS = 1 Serious Wound on YOU (the attacker).\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "MISS  (0 hits) — YOU take serious wound",
+        "target": "melee_miss_attacker"
+      },
+      {
+        "label": "1 HIT",
+        "target": "melee_hit_check"
+      },
+      {
+        "label": "2 HITS",
+        "target": "melee_hit_check_2"
+      },
+      {
+        "label": "3 HITS",
+        "target": "melee_hit_check_3"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_melee"
+      }
+    ]
+  },
+  "melee_miss_attacker": {
+    "title": "MELEE MISS — YOU ARE WOUNDED",
+    "text": "You missed — the intruder punishes you!\n\nYOU (the attacker) take 1 SERIOUS WOUND:\n1. Draw 1 Serious Wound card.\n2. Read it — apply its permanent effect.\n\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive)",
+        "target": "wound_survived"
+      },
+      {
+        "label": "3       (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "melee_hit_check": {
+    "title": "MELEE — 1 HIT: DEATH CHECK",
+    "text": "You dealt 1 injury.\n\nNow check if the intruder dies:\n\nLARVA / EGG:\n→ 1 injury = DEAD. No card needed.\n\nCREEPER or ADULT:\n→ Draw 1 Intruder Attack Card.\n→ Look at the BLOOD DROP value on the card.\n→ If 1 (your injuries) >= blood value → DEAD.\n→ If 1 < blood value → SURVIVES, counter-attacks.\n\nQUEEN or BREEDER:\n→ Draw 2 cards, add blood values together.\n→ 1 injury almost never kills a Queen.\n\n⚠ Melee: max 1 injury per hit vs Queen/Breeder.\n\nWhat happened?",
+    "options": [
+      {
+        "label": "LARVA/EGG — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — INTRUDER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — SURVIVES, COUNTER",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "melee_hit_check_2": {
+    "title": "MELEE — 2 HITS: DEATH CHECK",
+    "text": "You dealt 2 injuries.\n\nCheck if the intruder dies:\n\nLARVA / EGG → DEAD (1 injury was enough).\n\nCREEPER or ADULT:\n→ Draw 1 Intruder Attack Card.\n→ If 2 >= blood value → DEAD.\n→ If 2 < blood value → SURVIVES, counter-attacks.\n\nQUEEN or BREEDER:\n→ Draw 2 cards, add blood values.\n→ 2 injuries rarely kills a Queen.\n\n⚠ Melee: max 1 injury per hit vs Queen/Breeder.\n\nWhat happened?",
+    "options": [
+      {
+        "label": "LARVA/EGG — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — INTRUDER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — SURVIVES, COUNTER",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "melee_hit_check_3": {
+    "title": "MELEE — 3 HITS: DEATH CHECK",
+    "text": "You dealt 3 injuries.\n\nCheck if the intruder dies:\n\nLARVA / EGG → DEAD.\nCREEPER or ADULT:\n→ Draw 1 Intruder Attack Card.\n→ If 3 >= blood value → DEAD.\n→ If 3 < blood value → SURVIVES, counter-attacks.\n\nQUEEN or BREEDER:\n→ Draw 2 cards, add blood values.\n→ If 3 >= combined → DEAD.\n\n⚠ Melee: max 1 injury per hit vs Queen/Breeder.\n\nWhat happened?",
+    "options": [
+      {
+        "label": "LARVA/EGG — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — INTRUDER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — SURVIVES, COUNTER",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "combat_ranged": {
+    "title": "RANGED — AMMO & DICE",
+    "text": "RANGED WEAPONS\n(Pistol, Rifle, Shotgun, Flamethrower…)\n\n• Discard the ammo tokens shown on the card first.\n• Check range on the card (same room or adjacent).\n⚠ Firing into a room with another player:\n  They may also be at risk — check rules.\n\nDo you have enough ammo?",
+    "options": [
+      {
+        "label": "YES — HOW MANY DICE?",
+        "target": "combat_ranged_dice"
+      },
+      {
+        "label": "NO AMMO",
+        "target": "combat_no_ammo"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_player_attacks"
+      }
+    ]
+  },
+  "combat_ranged_dice": {
+    "title": "RANGED — HOW MANY DICE?",
+    "text": "Discard the ammo cost now.\n\nCheck your weapon card.\nHow many dice does it show?",
+    "options": [
+      {
+        "label": "1 DIE",
+        "target": "roll_ranged_1"
+      },
+      {
+        "label": "2 DICE",
+        "target": "roll_ranged_2"
+      },
+      {
+        "label": "3 DICE",
+        "target": "roll_ranged_3"
+      },
+      {
+        "label": "4 DICE",
+        "target": "roll_ranged_4"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_ranged"
+      }
+    ]
+  },
+  "roll_ranged_1": {
+    "title": "RANGED — ROLL 1 DIE",
+    "text": "Roll 1 combat die.\nHow many HIT symbols did you roll?",
+    "options": [
+      {
+        "label": "0 HITS  (miss)",
+        "target": "player_hit_0"
+      },
+      {
+        "label": "1 HIT",
+        "target": "player_hit_1"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_ranged_dice"
+      }
+    ]
+  },
+  "roll_ranged_2": {
+    "title": "RANGED — ROLL 2 DICE",
+    "text": "Roll 2 combat dice.\nHow many HIT symbols did you roll?",
+    "options": [
+      {
+        "label": "0 HITS  (miss)",
+        "target": "player_hit_0"
+      },
+      {
+        "label": "1 HIT",
+        "target": "player_hit_1"
+      },
+      {
+        "label": "2 HITS",
+        "target": "player_hit_2"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_ranged_dice"
+      }
+    ]
+  },
+  "roll_ranged_3": {
+    "title": "RANGED — ROLL 3 DICE",
+    "text": "Roll 3 combat dice.\nHow many HIT symbols did you roll?",
+    "options": [
+      {
+        "label": "0 HITS  (miss)",
+        "target": "player_hit_0"
+      },
+      {
+        "label": "1 HIT",
+        "target": "player_hit_1"
+      },
+      {
+        "label": "2 HITS",
+        "target": "player_hit_2"
+      },
+      {
+        "label": "3 HITS",
+        "target": "player_hit_3"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_ranged_dice"
+      }
+    ]
+  },
+  "roll_ranged_4": {
+    "title": "RANGED — ROLL 4 DICE",
+    "text": "Roll 4 combat dice.\nHow many HIT symbols did you roll?",
+    "options": [
+      {
+        "label": "0 HITS  (miss)",
+        "target": "player_hit_0"
+      },
+      {
+        "label": "1 HIT",
+        "target": "player_hit_1"
+      },
+      {
+        "label": "2 HITS",
+        "target": "player_hit_2"
+      },
+      {
+        "label": "3 HITS",
+        "target": "player_hit_3"
+      },
+      {
+        "label": "4 HITS",
+        "target": "player_hit_4"
+      },
+      {
+        "label": "BACK",
+        "target": "combat_ranged_dice"
+      }
+    ]
+  },
+  "player_hit_0": {
+    "title": "RANGED MISS",
+    "text": "No hits — the shot misses.\n\n⚠ Unlike melee, a ranged miss does NOT\n  give the attacker a serious wound.\n\nThe intruder COUNTER-ATTACKS.\nDraw 1 Intruder Attack Card.\n\nWhich intruder is counter-attacking?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "CREEPER",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "player_hit_1": {
+    "title": "RANGED — 1 HIT: DEATH CHECK",
+    "text": "You dealt 1 injury.\n\nLARVA / EGG → DEAD instantly.\n\nCREEPER or ADULT:\n→ Draw 1 Intruder Attack Card.\n→ Look at the BLOOD DROP value.\n→ If 1 >= blood value → DEAD.\n→ If 1 < blood value → SURVIVES, counter-attacks.\n\nQUEEN or BREEDER:\n→ Draw 2 cards, add both blood values.\n→ If 1 >= combined total → DEAD.\n\nWhat happened?",
+    "options": [
+      {
+        "label": "LARVA / EGG — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — INTRUDER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — SURVIVES, COUNTER",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "player_hit_2": {
+    "title": "RANGED — 2 HITS: DEATH CHECK",
+    "text": "You dealt 2 injuries.\n\nLARVA / EGG → DEAD.\n\nCREEPER or ADULT:\n→ Draw 1 Intruder Attack Card.\n→ If 2 >= blood value → DEAD.\n→ If 2 < blood value → SURVIVES, counter-attacks.\n\nQUEEN or BREEDER:\n→ Draw 2 cards, add both blood values.\n→ If 2 >= combined total → DEAD.\n\nWhat happened?",
+    "options": [
+      {
+        "label": "LARVA / EGG — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — INTRUDER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — SURVIVES, COUNTER",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "player_hit_3": {
+    "title": "RANGED — 3 HITS: DEATH CHECK",
+    "text": "You dealt 3 injuries.\n\nLARVA / EGG → DEAD.\n\nCREEPER or ADULT:\n→ Draw 1 Intruder Attack Card.\n→ If 3 >= blood value → DEAD.\n→ If 3 < blood value → SURVIVES, counter-attacks.\n\nQUEEN or BREEDER:\n→ Draw 2 cards, add both blood values.\n→ If 3 >= combined total → DEAD.\n\nWhat happened?",
+    "options": [
+      {
+        "label": "LARVA / EGG — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — INTRUDER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CARD CHECK — SURVIVES, COUNTER",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "player_hit_4": {
+    "title": "RANGED — 4 HITS: DEATH CHECK",
+    "text": "You dealt 4 injuries.\n\nLARVA / EGG / CREEPER → very likely DEAD.\n\nCREEPER or ADULT:\n→ Draw 1 Intruder Attack Card.\n→ If 4 >= blood value → DEAD.\n\nQUEEN or BREEDER:\n→ Draw 2 cards, add both blood values.\n→ If 4 >= combined total → DEAD.\n\nWhat happened?",
+    "options": [
+      {
+        "label": "YES — INTRUDER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "NO — INTRUDER COUNTER-ATTACKS",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "select_counter_type": {
+    "title": "INTRUDER COUNTER-ATTACKS",
+    "text": "The intruder fights back!\n\nDraw 1 INTRUDER ATTACK CARD.\n\nWhich intruder is counter-attacking?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "CREEPER",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "combat_no_ammo": {
+    "title": "OUT OF AMMO",
+    "text": "You don't have enough ammo to fire!\n\nOptions:\n• Switch to a MELEE weapon.\n• Try to ESCAPE.\n• Search for ammo (if room is unsearched).\n• Use a different item.",
+    "options": [
+      {
+        "label": "MELEE WEAPON",
+        "target": "combat_melee"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "SEARCH ROOM",
+        "target": "action_search"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "combat_intruder_attacks": {
+    "title": "INTRUDER ATTACKS",
+    "text": "Draw 1 INTRUDER ATTACK CARD.\n\nWhich intruder is attacking?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "CREEPER",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "combat_kill": {
+    "title": "INTRUDER KILLED!",
+    "text": "The intruder has been slain!\n\nSteps:\n1. Remove the intruder figure from the board.\n2. Remove all its wound tokens.\n3. Mark it as dead on the Intruder Board.\n4. Check if it was the QUEEN / ADULT.\n\nWas this an Adult Intruder or Queen?",
+    "options": [
+      {
+        "label": "YES — QUEEN / ADULT KILLED",
+        "target": "combat_kill_queen"
+      },
+      {
+        "label": "NO — LESSER INTRUDER",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "combat_kill_queen": {
+    "title": "QUEEN KILLED",
+    "text": "The Adult / Queen has been killed!\n\nSteps:\n1. Mark the Queen as dead on the Intruder Board.\n2. Check if any player's secret objective requires\n   the Queen dead — they may have won a condition!\n3. Eggs and larvae are still active on the board.\n\n⚠ The game is NOT over — other intruders remain.",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "wound_apply": {
+    "title": "LIGHT WOUNDS",
+    "text": "Each wound received = 1 LIGHT WOUND.\n\nPlace 1 marker on the next empty Light Wound\nspace on your character board.\n\nYour board has 2 Light Wound spaces.\n\nAfter placing your marker(s):\nAre BOTH Light Wound spaces now filled?",
+    "options": [
+      {
+        "label": "YES — BOTH SPACES FULL",
+        "target": "wound_convert_serious"
+      },
+      {
+        "label": "NO — SPACES STILL AVAILABLE",
+        "target": "wound_survived"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "wound_convert_serious": {
+    "title": "2 LIGHT WOUNDS → SERIOUS WOUND",
+    "text": "Both Light Wound spaces are full!\n\nSteps:\n1. Clear BOTH light wound markers.\n2. Place 1 marker back on the FIRST space.\n   (You keep 1 light wound.)\n3. Draw 1 SERIOUS WOUND CARD — read it aloud.\n4. Apply its effect permanently.\n\nCommon serious wound effects:\n  Injured Hand  → -1 die when attacking\n  Injured Leg   → Careful Move only (no run)\n  Injured Head  → Cannot search\n  Injured Torso → All light wounds become 2\n\nSerious wounds CAN be DRESSED (flip card,\neffect ignored) but card still counts.\n\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive)",
+        "target": "wound_survived"
+      },
+      {
+        "label": "3       (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "wound_survived": {
+    "title": "WOUNDED — STILL ALIVE",
+    "text": "You are wounded but still in the fight.\n\nWound state reminder:\n• Light Wounds: markers on character board.\n• 2 light wounds → convert to 1 Serious Wound.\n• Serious Wound cards: permanent effects.\n  Can be DRESSED (flip card) to ignore effect,\n  but the card still counts toward your limit.\n• 3 Serious Wound cards = death.\n\nDo you also need to check contamination?",
+    "options": [
+      {
+        "label": "YES — CHECK CONTAMINATION",
+        "target": "contamination_check_now"
+      },
+      {
+        "label": "NO — CONTINUE",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "wound_death": {
+    "title": "CHARACTER DEATH",
+    "text": "3 Serious Wound cards = your character dies!\n\nSteps:\n1. Remove your figure from the board.\n2. Reveal your chosen Objective card.\n3. Drop HEAVY OBJECTS in the room:\n   → Character Corpse token\n   → Intruder Carcass (if carrying)\n   → Intruder Egg (if carrying)\n4. ALL OTHER ITEMS disappear from the game.\n   They do NOT stay in the room.\n\n⚠ Were you contaminated? Reveal card now.\n⚠ Is this the FIRST character death?\n   → ALL Escape Pods unlock automatically!",
+    "options": [
+      {
+        "label": "FIRST DEATH — UNLOCK PODS",
+        "target": "first_death_pods"
+      },
+      {
+        "label": "HAD CONTAMINATION",
+        "target": "contamination_death_reveal"
+      },
+      {
+        "label": "NEITHER",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "wound_serious": {
+    "title": "SERIOUS WOUND",
+    "text": "You received a SERIOUS WOUND directly\n(from an intruder attack card result).\n\nSteps:\n1. Draw 1 SERIOUS WOUND CARD — read it.\n2. Apply its permanent effect immediately.\n\nCommon effects:\n  Injured Hand  → -1 die when attacking\n  Injured Leg   → Careful Move only\n  Injured Head  → Cannot search\n  Injured Torso → All light wounds count as 2\n\nDRESSING a wound: Flip the card face down.\nEffect is ignored but card still counts.\n\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive)",
+        "target": "wound_survived"
+      },
+      {
+        "label": "3       (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "ALSO TAKE LIGHT WOUNDS TOO",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "status_grabbed": {
+    "title": "STATUS: GRABBED",
+    "text": "You have been GRABBED by an intruder!\n\nWhile grabbed:\n• You CANNOT move.\n• You CANNOT pick up items.\n• You CAN still attack and use items.\n\nTo break free:\n• Deal enough damage to kill or wound the intruder.\n• Another player attacks the intruder.\n• Use an item that allows escape.\n\n⚠ Each round you remain grabbed, the intruder\n  automatically attacks you during the Event Phase!",
+    "options": [
+      {
+        "label": "ATTACK TO BREAK FREE",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "status_menu": {
+    "title": "WOUNDS & STATUS EFFECTS",
+    "text": "What status are you dealing with?",
+    "options": [
+      {
+        "label": "TAKING WOUNDS",
+        "target": "wound_apply"
+      },
+      {
+        "label": "SERIOUS WOUND",
+        "target": "wound_serious"
+      },
+      {
+        "label": "CONTAMINATED",
+        "target": "contamination_menu"
+      },
+      {
+        "label": "GRABBED",
+        "target": "status_grabbed"
+      },
+      {
+        "label": "CHARACTER DEATH",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_menu": {
+    "title": "CONTAMINATION",
+    "text": "What do you need help with?",
+    "options": [
+      {
+        "label": "I FOUND AN EGG OR SLIME",
+        "target": "contamination_take_card"
+      },
+      {
+        "label": "CONTAMINATION ATTACK ON ME",
+        "target": "contamination_take_card"
+      },
+      {
+        "label": "WHEN DO I REVEAL THE CARD?",
+        "target": "contamination_when_reveal"
+      },
+      {
+        "label": "USING SCANNER TO CHECK",
+        "target": "use_scanner"
+      },
+      {
+        "label": "I WAS TOLD I'M INFECTED",
+        "target": "contamination_infected"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_take_card": {
+    "title": "TAKE CONTAMINATION CARD",
+    "text": "You may have been infected!\n\nSteps:\n1. Draw 1 CONTAMINATION CARD.\n2. Keep it FACE DOWN — do NOT look at it.\n3. Place it in your play area.\n\nTypes (revealed later):\n  INFECTED → Larva will burst from you!\n  CLEAN    → You were lucky.\n\nYou won't know which it is until you reveal it.",
+    "options": [
+      {
+        "label": "WHEN DO I REVEAL?",
+        "target": "contamination_when_reveal"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_when_reveal": {
+    "title": "WHEN TO REVEAL",
+    "text": "Reveal your contamination card when:\n\n• You use a SCANNER on yourself.\n• Another player uses a Scanner on you\n  (you are in the same room).\n• A card or ability forces revelation.\n• You DIE — reveal immediately.\n• GAME END — reveal for objective checks.\n\nReady to reveal now?",
+    "options": [
+      {
+        "label": "REVEAL NOW",
+        "target": "contamination_check_now"
+      },
+      {
+        "label": "NOT YET",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_check_now": {
+    "title": "REVEAL CONTAMINATION CARD",
+    "text": "Flip your contamination card face up now.\n\nWhat does it show?",
+    "options": [
+      {
+        "label": "INFECTED",
+        "target": "contamination_infected"
+      },
+      {
+        "label": "CLEAN",
+        "target": "contamination_clean"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_clean": {
+    "title": "CONTAMINATION: CLEAN",
+    "text": "✓ You are CLEAN — no infection!\n\nDiscard the contamination card face up.\nYou are free of any infection risk from\nthis particular exposure.\n\nYou may still be re-contaminated by\nfuture encounters with eggs or slime.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_infected": {
+    "title": "CONTAMINATION: INFECTED",
+    "text": "The card is INFECTED.\n\nSteps:\n1. Place a LARVA token on your Character board.\n   (The larva is gestating — not yet on the board.)\n2. Discard the contamination card.\n\nDo you ALREADY have a Larva on your board?",
+    "options": [
+      {
+        "label": "YES — ALREADY HAVE LARVA",
+        "target": "contamination_second_larva"
+      },
+      {
+        "label": "NO — LARVA PLACED ON BOARD",
+        "target": "contamination_larva_on_board"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_larva_on_board": {
+    "title": "LARVA ON YOUR BOARD",
+    "text": "A Larva token is now on your Character board.\n\nEffects while larva is on your board:\n• You are carrying a gestating larva.\n• Using the REST card will scan your\n  contamination cards — if infected, the larva\n  may activate.\n• At game end, if you have a larva on board\n  you skip the contamination check.\n\n⚠ Get to the SURGERY ROOM or use ANTIDOTE\n  to remove it before it's too late.",
+    "options": [
+      {
+        "label": "SURGERY ROOM",
+        "target": "surgery_room"
+      },
+      {
+        "label": "ANTIDOTE",
+        "target": "antidote_item"
+      },
+      {
+        "label": "CONTINUE",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_second_larva": {
+    "title": "SECOND LARVA — YOU DIE!",
+    "text": "You already had a Larva on your board!\n\nA second infection is fatal.\n\nSteps:\n1. The attacking Larva disappears (removed).\n2. The existing Larva on your board stays.\n3. You receive 1 CONTAMINATION CARD instead.\n\nWait — per the FAQ (Q12): the attacking Larva\njust disappears and you take a contamination card.\nYou do NOT automatically die from this alone.",
+    "options": [
+      {
+        "label": "TAKE CONTAMINATION CARD",
+        "target": "contamination_take_card"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_death_reveal": {
+    "title": "DEATH CONTAMINATION REVEAL",
+    "text": "You died while contaminated — reveal now.\n\nWhat does the card show?",
+    "options": [
+      {
+        "label": "INFECTED — SPAWN LARVA",
+        "target": "contamination_infected_death"
+      },
+      {
+        "label": "CLEAN — NO LARVA",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "contamination_infected_death": {
+    "title": "INFECTED AT DEATH",
+    "text": "Even in death, the larva stirs!\n\nSteps:\n1. Spawn a LARVA figure in the room\n   where you died.\n2. Discard the contamination card.\n3. The larva is now an active intruder.\n\nOther players in that room must deal with\nthe larva — an encounter may trigger.",
+    "options": [
+      {
+        "label": "ENCOUNTER IN THAT ROOM",
+        "target": "encounter_on_entry"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "fire_menu": {
+    "title": "FIRE",
+    "text": "What do you need help with?",
+    "options": [
+      {
+        "label": "I'M IN A FIRE ROOM",
+        "target": "fire_in_room"
+      },
+      {
+        "label": "FIRE SPREADING (event)",
+        "target": "fire_spreading"
+      },
+      {
+        "label": "EXTINGUISHING FIRE",
+        "target": "fire_extinguish"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "fire_in_room": {
+    "title": "FIRE IN YOUR ROOM",
+    "text": "Your room is on FIRE!\n\nEffects:\n• When you END YOUR ROUND in a fire room:\n  take 1 LIGHT WOUND. (Not at start — at END.)\n• Intruders in a fire room take 1 Injury during\n  the Fire Damage phase of the Event Phase.\n• You can still take actions inside.\n\nOptions:\n• Extinguish the fire (Fire Extinguisher item).\n• Leave the room as fast as possible.\n\nDo you have a Fire Extinguisher?",
+    "options": [
+      {
+        "label": "YES — EXTINGUISH",
+        "target": "fire_extinguish"
+      },
+      {
+        "label": "NO — TAKE WOUND AND MOVE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "NO — STAY AND ACT",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "fire_extinguish": {
+    "title": "EXTINGUISH FIRE",
+    "text": "USING FIRE EXTINGUISHER:\n  Cost: 1 Action Token\n  Effect: Remove the fire token from this room.\n\nWITHOUT EXTINGUISHER:\n  Some game editions allow spending 2 extra\n  Action Tokens to douse the fire manually.\n  Check your edition's rules.\n\n⚠ Adjacent rooms with fire must each\n  be extinguished separately.",
+    "options": [
+      {
+        "label": "FIRE REMOVED",
+        "target": "home"
+      },
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "fire_spreading": {
+    "title": "FIRE SPREADING (Event Phase)",
+    "text": "Fire spreads during the Event Phase.\n\nSteps:\n1. Each existing fire token spreads to one\n   adjacent corridor or room (per event card).\n2. Place new fire tokens in spread locations.\n3. Any player in a newly-on-fire room:\n   → Takes 1 wound immediately.\n4. Fire in a corridor: passing through costs\n   1 extra Action Token.\n\n⚠ Fire reaching critical rooms (Engine, Bridge)\n  may trigger special game effects!",
+    "options": [
+      {
+        "label": "PLAYER IN NEW FIRE ROOM",
+        "target": "fire_in_room"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_phase_menu": {
+    "title": "EVENT PHASE",
+    "text": "Event Phase — exact order:\n\n① Advance TIME TRACK marker one space right.\n   If Self-Destruct active: advance that too.\n\n② INTRUDER ATTACKS IN COMBAT\n   Each intruder sharing a room with a character\n   attacks them now.\n\n③ FIRE DAMAGE\n   Each character who ended their round in a\n   fire room: 1 Light Wound.\n   Each intruder in a fire room: 1 Injury.\n\n④ EVENT CARD\n   Intruders NOT in combat move, then card effect.\n\n⑤ INTRUDER BAG DEVELOPMENT\n   Draw 1 token from the Intruder Bag.\n\nWhat are you resolving?",
+    "options": [
+      {
+        "label": "② INTRUDER IN COMBAT ATTACKS",
+        "target": "event_intruder_attacks"
+      },
+      {
+        "label": "③ FIRE DAMAGE (end of rounds)",
+        "target": "fire_in_room"
+      },
+      {
+        "label": "④ EVENT CARD: INTRUDER ACTIVATES",
+        "target": "event_intruder_activates"
+      },
+      {
+        "label": "④ EVENT CARD: FIRE / DAMAGE",
+        "target": "event_fire_damage"
+      },
+      {
+        "label": "④ EVENT CARD: SHIP MALFUNCTION",
+        "target": "event_ship"
+      },
+      {
+        "label": "④ EVENT CARD: COORDINATE SYMBOL",
+        "target": "event_coordinate"
+      },
+      {
+        "label": "④ EVENT CARD: SILENCE",
+        "target": "event_silence"
+      },
+      {
+        "label": "④ EVENT CARD: TIME CARD (last)",
+        "target": "event_time_card"
+      },
+      {
+        "label": "⑤ INTRUDER BAG DEVELOPMENT",
+        "target": "event_bag_development"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_intruder_activates": {
+    "title": "EVENT: INTRUDER ACTIVATES",
+    "text": "An intruder activates and moves!\n\nSteps:\n1. Check the event card for which intruder type.\n2. That intruder type moves toward the nearest\n   player (following shortest corridor path).\n3. If multiple of that type exist, all activate.\n4. If the intruder enters a player's room:\n   → ENCOUNTER begins immediately.\n5. If no intruder of that type is on the board:\n   → Nothing happens.\n\nDid any intruder enter a player's room?",
+    "options": [
+      {
+        "label": "YES — ENCOUNTER!",
+        "target": "encounter_intruder_enters"
+      },
+      {
+        "label": "NO — INTRUDER MOVES ONLY",
+        "target": "event_resolve_queue"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_intruder_attacks": {
+    "title": "EVENT: INTRUDER ATTACK",
+    "text": "An intruder in the same room as a player attacks!\n\n1. Identify the targeted player.\n2. Draw 1 INTRUDER ATTACK CARD.\n\nWhich intruder is attacking?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "CREEPER",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_fire_damage": {
+    "title": "EVENT: FIRE / DAMAGE",
+    "text": "Fire spreads or a room takes damage!\n\nSteps:\n1. Follow the coordinates on the event card.\n2. Place a FIRE TOKEN in the indicated location.\n3. If any player is in that location:\n   → They take 1 wound immediately.\n\nAlso check if existing fires spread this round.",
+    "options": [
+      {
+        "label": "PLAYER IN FIRE ROOM",
+        "target": "fire_in_room"
+      },
+      {
+        "label": "FIRE SPREADING",
+        "target": "fire_spreading"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_ship": {
+    "title": "EVENT: SHIP MALFUNCTION",
+    "text": "A ship system has malfunctioned!\n\nCommon effects:\n  Hull Breach    → Place damage on a section\n  Power Failure  → A section loses power\n  Alarm          → Noise check in all occupied rooms\n  Door Jam       → All doors close or lock\n\nRead the specific text on the event card\nand follow its instructions exactly.",
+    "options": [
+      {
+        "label": "NOISE CHECKS REQUIRED",
+        "target": "noise_roll"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_coordinate": {
+    "title": "EVENT: COORDINATE SYMBOL",
+    "text": "The card shows a COORDINATE on the ship map.\n\nSteps:\n1. Find that coordinate on the game board.\n2. Resolve the effect there:\n   • Corridor → place a noise token.\n   • Room → apply the room's special event.\n3. Then resolve the INTRUDER QUEUE.\n\nResolve the coordinate effect, then continue.",
+    "options": [
+      {
+        "label": "RESOLVE INTRUDER QUEUE",
+        "target": "event_resolve_queue"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_silence": {
+    "title": "EVENT: SILENCE",
+    "text": "Nothing dramatic happens this round.\n\n✓ No special event to resolve.\n\nStill resolve the INTRUDER QUEUE\nif there are intruders waiting to spawn.",
+    "options": [
+      {
+        "label": "RESOLVE INTRUDER QUEUE",
+        "target": "event_resolve_queue"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_time_card": {
+    "title": "TIME CARD — GAME ENDS!",
+    "text": "⚠ THE LAST EVENT CARD HAS BEEN DRAWN!\n\nThe game ends immediately.\n\nSteps:\n1. Resolve this card's effect first.\n2. All players reveal their SECRET OBJECTIVES.\n3. Check each objective's win conditions.\n4. Determine who won and who lost.\n\nRemember: Nemesis is semi-cooperative —\nsome players may win while others lose!",
+    "options": [
+      {
+        "label": "CHECK WIN CONDITIONS",
+        "target": "game_end_win_lose"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_resolve_queue": {
+    "title": "→",
+    "text": "→",
+    "options": [
+      {
+        "label": "INTRUDER BAG DEVELOPMENT",
+        "target": "event_bag_development"
+      }
+    ]
+  },
+  "event_bag_development": {
+    "title": "⑤ INTRUDER BAG DEVELOPMENT",
+    "text": "Draw 1 token from the INTRUDER BAG.\n\nWhat did you draw?",
+    "options": [
+      {
+        "label": "LARVA TOKEN",
+        "target": "bag_larva"
+      },
+      {
+        "label": "CREEPER TOKEN",
+        "target": "bag_creeper"
+      },
+      {
+        "label": "ADULT TOKEN",
+        "target": "bag_adult"
+      },
+      {
+        "label": "BREEDER TOKEN",
+        "target": "bag_breeder"
+      },
+      {
+        "label": "QUEEN TOKEN",
+        "target": "bag_queen"
+      },
+      {
+        "label": "BLANK TOKEN",
+        "target": "bag_blank"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_larva": {
+    "title": "BAG: LARVA TOKEN",
+    "text": "You drew a LARVA token.\n\nSteps:\n1. Remove this Larva token from the bag.\n2. Add 1 ADULT token to the Intruder bag.\n\nThe intruder population escalates!\nNo new miniature is placed on the board yet.",
+    "options": [
+      {
+        "label": "END OF ROUND",
+        "target": "event_end_of_round"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_creeper": {
+    "title": "BAG: CREEPER TOKEN",
+    "text": "You drew a CREEPER token.\n\nSteps:\n1. Remove this Creeper token from the bag.\n2. Add 1 BREEDER token to the Intruder bag.\n\nThe intruder threat grows stronger!",
+    "options": [
+      {
+        "label": "END OF ROUND",
+        "target": "event_end_of_round"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_adult": {
+    "title": "BAG: ADULT TOKEN",
+    "text": "You drew an ADULT token.\n\nSteps:\n1. ALL players roll for NOISE in turn order.\n   (Players in combat with an intruder skip.)\n2. Resolve each noise roll result.\n3. Return the Adult token to the bag immediately\n   (so it can be drawn again in an Encounter).\n\nResolve noise rolls now.",
+    "options": [
+      {
+        "label": "RESOLVE NOISE ROLLS",
+        "target": "noise_roll"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_breeder": {
+    "title": "BAG: BREEDER TOKEN",
+    "text": "You drew a BREEDER token.\n\nSteps:\n1. ALL players roll for NOISE in turn order.\n   (Players in combat with an intruder skip.)\n2. Resolve each noise roll result.\n3. Return the Breeder token to the bag.\n\nResolve noise rolls now.",
+    "options": [
+      {
+        "label": "RESOLVE NOISE ROLLS",
+        "target": "noise_roll"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_queen": {
+    "title": "BAG: QUEEN TOKEN",
+    "text": "You drew a QUEEN token.\n\nIs any Character currently in the NEST room?",
+    "options": [
+      {
+        "label": "YES — CHARACTER IN NEST",
+        "target": "bag_queen_nest"
+      },
+      {
+        "label": "NO — NEST IS EMPTY",
+        "target": "bag_queen_egg"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_queen_nest": {
+    "title": "BAG: QUEEN APPEARS IN NEST",
+    "text": "A Character is in the Nest!\n\nSteps:\n1. Place the Queen miniature in the Nest room.\n2. Resolve an ENCOUNTER immediately.\n   → Draw Intruder token from bag (surprise check).\n\nThe Queen has awakened!",
+    "options": [
+      {
+        "label": "RESOLVE ENCOUNTER",
+        "target": "encounter_draw_surprise"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_queen_egg": {
+    "title": "BAG: QUEEN — NEST EMPTY",
+    "text": "No character is in the Nest.\n\nSteps:\n1. Add 1 additional EGG token to the Intruder Board\n   (representing eggs laid in the Nest).\n\n⚠ Eggs on the Intruder Board are in the Nest Room.\n  If the Nest is on fire, 1 egg is destroyed each\n  fire damage phase.",
+    "options": [
+      {
+        "label": "END OF ROUND",
+        "target": "event_end_of_round"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_blank": {
+    "title": "BAG: BLANK TOKEN",
+    "text": "You drew a BLANK token.\n\nSteps:\n1. Place noise markers in all CORRIDORS connected\n   to any room the blank token designates.\n2. Return the blank token to the bag.\n\nWas this the LAST token in the bag?",
+    "options": [
+      {
+        "label": "YES — ADD 1 ADULT TOKEN",
+        "target": "bag_blank_last"
+      },
+      {
+        "label": "NO",
+        "target": "event_end_of_round"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "bag_blank_last": {
+    "title": "BAG: BLANK — LAST TOKEN",
+    "text": "The blank was the last token.\n\nSteps:\n1. Add 1 ADULT token to the Intruder bag.\n2. Return the blank token to the bag.\n\nNo intruder spawns this development phase.",
+    "options": [
+      {
+        "label": "END OF ROUND",
+        "target": "event_end_of_round"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "event_end_of_round": {
+    "title": "END OF ROUND",
+    "text": "After Event Phase, start a new round:\n\n1. All players draw Action Cards to hand of 5.\n2. Pass FIRST PLAYER TOKEN left.\n3. Begin Player Rounds again.\n\nFIRST ENCOUNTER CHECK:\nWhen the FIRST intruder miniature appeared\non the board this game → all players must have\nchosen one of their two Objective cards.\n(If not done yet, do it now.)",
+    "options": [
+      {
+        "label": "START NEW ROUND",
+        "target": "round_sequence"
+      },
+      {
+        "label": "CHOOSE OBJECTIVES (first)",
+        "target": "first_encounter_objectives"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "game_end_menu": {
+    "title": "GAME END",
+    "text": "What do you need help with?",
+    "options": [
+      {
+        "label": "HOW THE GAME ENDS",
+        "target": "game_end_triggers"
+      },
+      {
+        "label": "ESCAPE PODS",
+        "target": "escape_pods_rules"
+      },
+      {
+        "label": "HIBERNATION",
+        "target": "hibernation_rules"
+      },
+      {
+        "label": "SELF-DESTRUCT",
+        "target": "self_destruct_rules"
+      },
+      {
+        "label": "SECRET OBJECTIVES",
+        "target": "game_end_objectives"
+      },
+      {
+        "label": "VICTORY CHECKS (in order)",
+        "target": "game_end_win_lose"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "game_end_triggers": {
+    "title": "GAME END TRIGGERS",
+    "text": "The game ends when ANY of these happen:\n\n① The Emergency Shuttle LAUNCHES.\n   (Players trigger this deliberately.)\n\n② The TIME CARD is drawn.\n   (Last event card in the deck.)\n\n③ ALL characters are dead.\n\nWhen the game ends:\n• All players reveal secret objectives.\n• Check each player's individual win condition.\n• Players win or lose independently!",
+    "options": [
+      {
+        "label": "WIN / LOSE",
+        "target": "game_end_win_lose"
+      },
+      {
+        "label": "ESCAPE SHUTTLE",
+        "target": "game_end_shuttle"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "game_end_shuttle": {
+    "title": "EMERGENCY SHUTTLE",
+    "text": "Escaping via the Emergency Shuttle:\n\n1. Travel to the EMERGENCY SHUTTLE BAY room.\n2. Spend actions to prepare the shuttle\n   (check room card for requirements).\n3. Declare launch — the game ends.\n4. Only characters physically IN the shuttle bay\n   escape. Others are left behind.\n\n⚠ Launching when other players aren't ready\n  may cause them to lose their objectives!\n  (Semi-cooperative — discuss with the group.)",
+    "options": [
+      {
+        "label": "CHECK WIN CONDITIONS",
+        "target": "game_end_win_lose"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "game_end_objectives": {
+    "title": "SECRET OBJECTIVES",
+    "text": "Each player has a SECRET OBJECTIVE card,\nrevealed only at game end.\n\nCommon objectives:\n  Escape Alive       → Survive on the shuttle\n  Kill the Queen     → Queen dead at game end\n  Destroy the Ship   → Self-destruct activated\n  Sample Collection  → Carry intruder samples\n  Stay Behind        → Don't escape on shuttle\n  Distress Signal    → Signal must be sent\n\nA player can WIN while others LOSE.\nA player can LOSE while others WIN.\nThis is intentional — Nemesis is semi-cooperative.",
+    "options": [
+      {
+        "label": "WIN / LOSE",
+        "target": "game_end_win_lose"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "game_end_win_lose": {
+    "title": "VICTORY CHECKS",
+    "text": "Game end triggers:\n• Time Track hits red (hyperspace jump)\n• Self-Destruct marker hits final red space\n• 9th fire or malfunction marker placed\n• All characters dead / escaped / hibernated\n\nResolve IN ORDER for ALL surviving characters:",
+    "options": [
+      {
+        "label": "① ENGINE CHECK",
+        "target": "victory_engines"
+      },
+      {
+        "label": "② COORDINATES CHECK",
+        "target": "victory_coordinates"
+      },
+      {
+        "label": "③ CONTAMINATION CHECK",
+        "target": "victory_contamination"
+      },
+      {
+        "label": "④ OBJECTIVE CHECK",
+        "target": "victory_objectives"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_escape": {
+    "title": "RESULT: ESCAPE / NO ATTACK",
+    "text": "The attack card shows ESCAPE.\n\n✓ The intruder does NOT attack this time.\n✓ If this happened during an ESCAPE ATTEMPT,\n  you flee to an adjacent room for free.\n✓ If this happened during a counter-attack,\n  the encounter simply ends.\n\nNo wounds taken.",
+    "options": [
+      {
+        "label": "CONTINUE TURN",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_1wound": {
+    "title": "RESULT: 1 WOUND",
+    "text": "Take 1 WOUND.\n\nDraw 1 wound card — keep it FACE DOWN.\nDo not look at it.\n\nHow many wound cards do you now have in total?",
+    "options": [
+      {
+        "label": "APPLY LIGHT WOUND(S)",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_2wounds": {
+    "title": "RESULT: 2 WOUNDS",
+    "text": "Take 2 WOUNDS.\n\nDraw 2 wound cards — keep them FACE DOWN.\nDo not look at them.\n\nHow many wound cards do you now have in total?",
+    "options": [
+      {
+        "label": "APPLY LIGHT WOUND(S)",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_3wounds": {
+    "title": "RESULT: 3 WOUNDS",
+    "text": "Take 3 WOUNDS.\n\nDraw 3 wound cards — keep them FACE DOWN.\nDo not look at them.\n\nHow many wound cards do you now have in total?",
+    "options": [
+      {
+        "label": "APPLY LIGHT WOUND(S)",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_4wounds": {
+    "title": "RESULT: 4 WOUNDS",
+    "text": "Take 4 WOUNDS.\n\nDraw 4 wound cards — keep them FACE DOWN.\nDo not look at them.\n\nHow many wound cards do you now have in total?",
+    "options": [
+      {
+        "label": "APPLY LIGHT WOUND(S)",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_serious": {
+    "title": "RESULT: SERIOUS WOUND",
+    "text": "Take a SERIOUS WOUND.\n\nSteps:\n1. Draw 1 SERIOUS WOUND CARD — read it aloud.\n2. Apply its permanent negative effect immediately.\n3. Serious wounds CANNOT be healed.\n\nCommon serious wound effects:\n  Injured Hand  → -1 die when attacking\n  Injured Leg   → Careful Move only (no normal move)\n  Injured Head  → Cannot search rooms\n  Injured Torso → Draw 2 wound cards per wound\n\nDo you also take additional regular wounds?",
+    "options": [
+      {
+        "label": "YES — ALSO TAKE WOUNDS",
+        "target": "wound_apply"
+      },
+      {
+        "label": "NO — SERIOUS ONLY",
+        "target": "wound_survived"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_serious_1": {
+    "title": "RESULT: SERIOUS WOUND + 1 WOUND",
+    "text": "Take a SERIOUS WOUND and 1 additional WOUND.\n\nSteps:\n1. Draw 1 SERIOUS WOUND CARD — apply permanently.\n2. Draw 1 regular WOUND CARD face down.\n\nSerious wound effects:\n  Injured Hand  → -1 die when attacking\n  Injured Leg   → Careful Move only\n  Injured Head  → Cannot search\n  Injured Torso → Draw 2 wound cards per wound\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY LIGHT WOUND(S)",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_serious_2": {
+    "title": "RESULT: SERIOUS WOUND + 2 WOUNDS",
+    "text": "Take a SERIOUS WOUND and 2 additional WOUNDS.\n\nSteps:\n1. Draw 1 SERIOUS WOUND CARD — apply permanently.\n2. Draw 2 regular WOUND CARDS face down.\n\nSerious wound effects:\n  Injured Hand  → -1 die when attacking\n  Injured Leg   → Careful Move only\n  Injured Head  → Cannot search\n  Injured Torso → Draw 2 wound cards per wound\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY LIGHT WOUND(S)",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_grab": {
+    "title": "RESULT: GRABBED",
+    "text": "You are GRABBED by the intruder!\n\nWhile grabbed:\n• Cannot move.\n• Cannot pick up items.\n• CAN still attack and use items.\n\nThe intruder automatically attacks you\neach round during the Event Phase.\n\nTo break free:\n• Deal enough damage to the intruder.\n• Another player attacks the intruder.\n• Use an item that allows escape.",
+    "options": [
+      {
+        "label": "FIGHT TO BREAK FREE",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_grab_1": {
+    "title": "RESULT: GRABBED + 1 WOUND",
+    "text": "You are GRABBED and take 1 WOUND!\n\nSteps:\n1. Draw 1 wound card face down.\n2. Place GRABBED token on your character.\n\nWhile grabbed:\n• Cannot move.\n• Cannot pick up items.\n• CAN attack and use items.\n• Auto-attacked each Event Phase until free.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "1 – 4 TOTAL  (still alive)",
+        "target": "status_grabbed"
+      },
+      {
+        "label": "5+ TOTAL  (character dies)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_grab_2": {
+    "title": "RESULT: GRABBED + 2 WOUNDS",
+    "text": "You are GRABBED and take 2 WOUNDS!\n\nSteps:\n1. Draw 2 wound cards face down.\n2. Place GRABBED token on your character.\n\nWhile grabbed:\n• Cannot move.\n• Cannot pick up items.\n• CAN attack and use items.\n• Auto-attacked each Event Phase until free.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "1 – 4 TOTAL  (still alive)",
+        "target": "status_grabbed"
+      },
+      {
+        "label": "5+ TOTAL  (character dies)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_egg": {
+    "title": "RESULT: EGG LAID / CONTAMINATION",
+    "text": "The intruder lays an egg on you!\n\nSteps:\n1. Draw 1 CONTAMINATION CARD — keep FACE DOWN.\n2. Do NOT look at it.\n3. Place it in your play area.\n\nYou may be infected — you won't know until\nyou are scanned or the card is revealed.\n\nTypes (revealed later):\n  INFECTED → Larva bursts from you!\n  CLEAN    → You were lucky.",
+    "options": [
+      {
+        "label": "WHEN DO I REVEAL IT?",
+        "target": "contamination_when_reveal"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_outcome_egg_1wound": {
+    "title": "RESULT: EGG + 1 WOUND",
+    "text": "The intruder lays an egg on you AND wounds you!\n\nSteps:\n1. Draw 1 CONTAMINATION CARD — keep FACE DOWN.\n2. Draw 1 WOUND CARD face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY LIGHT WOUND(S)",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_counter_larva": {
+    "title": "LARVA ATTACKS",
+    "text": "You drew an Intruder Attack Card.\nLook at the LARVA row.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_outcome_escape"
+      },
+      {
+        "label": "1 WOUND  (1 blood drop)",
+        "target": "atk_outcome_1wound"
+      },
+      {
+        "label": "CONTAMINATION  (egg symbol)",
+        "target": "atk_outcome_egg"
+      },
+      {
+        "label": "SERIOUS WOUND  (skull / cross)",
+        "target": "atk_outcome_serious"
+      },
+      {
+        "label": "BACK",
+        "target": "select_counter_type"
+      }
+    ]
+  },
+  "atk_surprised_larva": {
+    "title": "LARVA SURPRISE ATTACK",
+    "text": "You drew an Intruder Attack Card.\nLook at the LARVA row.\n\nYou are SURPRISED — cannot react.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_outcome_escape"
+      },
+      {
+        "label": "1 WOUND  (1 blood drop)",
+        "target": "atk_outcome_1wound"
+      },
+      {
+        "label": "CONTAMINATION  (egg symbol)",
+        "target": "atk_outcome_egg"
+      },
+      {
+        "label": "SERIOUS WOUND  (skull / cross)",
+        "target": "atk_outcome_serious"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "atk_notsurprised_larva": {
+    "title": "LARVA ATTACKS",
+    "text": "You drew an Intruder Attack Card.\nLook at the LARVA row.\n\nYou are NOT surprised — you may react after.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_notsurp_larva_escape"
+      },
+      {
+        "label": "1 WOUND  (1 blood drop)",
+        "target": "atk_notsurp_larva_wound"
+      },
+      {
+        "label": "CONTAMINATION  (egg symbol)",
+        "target": "atk_notsurp_larva_egg"
+      },
+      {
+        "label": "SERIOUS WOUND  (skull / cross)",
+        "target": "atk_notsurp_larva_serious"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "atk_notsurp_larva_escape": {
+    "title": "LARVA: NO ATTACK",
+    "text": "The larva does not attack.\n\n✓ No wounds taken.\n\nYou were not surprised — you may now:\n• Fight the larva  (spend 1 Action Token)\n• Escape the room  (spend 1 Action Token)\n• End the encounter",
+    "options": [
+      {
+        "label": "FIGHT",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "END",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_notsurp_larva_wound": {
+    "title": "LARVA: 1 WOUND",
+    "text": "The larva scratches you — take 1 WOUND.\n\nDraw 1 wound card face down.\n\nYou were not surprised — you may now:\n• Fight back  (spend 1 Action Token)\n• Escape      (spend 1 Action Token)\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_notsurp_larva_egg": {
+    "title": "LARVA: CONTAMINATION",
+    "text": "The larva infects you!\n\nDraw 1 CONTAMINATION CARD — keep FACE DOWN.\n\nYou were not surprised — you may now:\n• Fight back  (spend 1 Action Token)\n• Escape      (spend 1 Action Token)",
+    "options": [
+      {
+        "label": "FIGHT BACK",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "END TURN",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_notsurp_larva_serious": {
+    "title": "LARVA: SERIOUS WOUND",
+    "text": "The larva deals a serious wound!\n\n1. Draw 1 SERIOUS WOUND CARD — apply permanently.\n\nYou were not surprised — you may now:\n• Fight back  (spend 1 Action Token)\n• Escape      (spend 1 Action Token)",
+    "options": [
+      {
+        "label": "FIGHT BACK",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "END TURN",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_counter_creeper": {
+    "title": "CREEPER ATTACKS",
+    "text": "You drew an Intruder Attack Card.\nLook at the CREEPER row.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_outcome_escape"
+      },
+      {
+        "label": "1 WOUND  (1 blood drop)",
+        "target": "atk_outcome_1wound"
+      },
+      {
+        "label": "2 WOUNDS  (2 blood drops)",
+        "target": "atk_outcome_2wounds"
+      },
+      {
+        "label": "CONTAMINATION + 1 WOUND  (egg + drop)",
+        "target": "atk_outcome_egg_1wound"
+      },
+      {
+        "label": "SERIOUS WOUND  (skull / cross)",
+        "target": "atk_outcome_serious"
+      },
+      {
+        "label": "BACK",
+        "target": "select_counter_type"
+      }
+    ]
+  },
+  "atk_surprised_creeper": {
+    "title": "CREEPER SURPRISE ATTACK",
+    "text": "You drew an Intruder Attack Card.\nLook at the CREEPER row.\n\nYou are SURPRISED — cannot react.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_outcome_escape"
+      },
+      {
+        "label": "1 WOUND  (1 blood drop)",
+        "target": "atk_outcome_1wound"
+      },
+      {
+        "label": "2 WOUNDS  (2 blood drops)",
+        "target": "atk_outcome_2wounds"
+      },
+      {
+        "label": "CONTAMINATION + 1 WOUND  (egg + drop)",
+        "target": "atk_outcome_egg_1wound"
+      },
+      {
+        "label": "SERIOUS WOUND  (skull / cross)",
+        "target": "atk_outcome_serious"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "atk_notsurprised_creeper": {
+    "title": "CREEPER ATTACKS",
+    "text": "You drew an Intruder Attack Card.\nLook at the CREEPER row.\n\nYou are NOT surprised — you may react after.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_notsurp_creeper_escape"
+      },
+      {
+        "label": "1 WOUND  (1 blood drop)",
+        "target": "atk_notsurp_creeper_wound1"
+      },
+      {
+        "label": "2 WOUNDS  (2 blood drops)",
+        "target": "atk_notsurp_creeper_wound2"
+      },
+      {
+        "label": "CONTAMINATION + 1 WOUND  (egg + drop)",
+        "target": "atk_notsurp_creeper_egg"
+      },
+      {
+        "label": "SERIOUS WOUND  (skull / cross)",
+        "target": "atk_notsurp_creeper_serious"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "atk_notsurp_creeper_escape": {
+    "title": "CREEPER: NO ATTACK",
+    "text": "The creeper does not attack.\n\n✓ No wounds taken.\n\nYou were not surprised — you may now:\n• Fight  (spend 1 Action Token)\n• Escape (spend 1 Action Token)\n• End encounter",
+    "options": [
+      {
+        "label": "FIGHT",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "END",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_notsurp_creeper_wound1": {
+    "title": "CREEPER: 1 WOUND",
+    "text": "The creeper claws you — take 1 WOUND.\n\nDraw 1 wound card face down.\n\nHow many total wound cards now?\nYou may react after:",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_creeper_wound2": {
+    "title": "CREEPER: 2 WOUNDS",
+    "text": "The creeper mauls you — take 2 WOUNDS.\n\nDraw 2 wound cards face down.\n\nHow many total wound cards now?\nYou may react after:",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_creeper_egg": {
+    "title": "CREEPER: CONTAMINATION + 1 WOUND",
+    "text": "The creeper infects and wounds you!\n\n1. Draw 1 CONTAMINATION CARD — keep FACE DOWN.\n2. Draw 1 WOUND CARD face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_creeper_serious": {
+    "title": "CREEPER: SERIOUS WOUND",
+    "text": "The creeper deals a serious wound!\n\n1. Draw 1 SERIOUS WOUND CARD — apply permanently.\n\nYou may now react:",
+    "options": [
+      {
+        "label": "FIGHT BACK",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "END TURN",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_counter_adult": {
+    "title": "ADULT / HUNTER ATTACKS",
+    "text": "You drew an Intruder Attack Card.\nLook at the ADULT / HUNTER row.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_outcome_escape"
+      },
+      {
+        "label": "2 WOUNDS  (2 blood drops)",
+        "target": "atk_outcome_2wounds"
+      },
+      {
+        "label": "3 WOUNDS  (3 blood drops)",
+        "target": "atk_outcome_3wounds"
+      },
+      {
+        "label": "GRAB + 1 WOUND  (hand + drop)",
+        "target": "atk_outcome_grab_1"
+      },
+      {
+        "label": "SERIOUS WOUND + 1 WOUND  (skull + drop)",
+        "target": "atk_outcome_serious_1"
+      },
+      {
+        "label": "CONTAMINATION  (egg symbol)",
+        "target": "atk_outcome_egg"
+      },
+      {
+        "label": "BACK",
+        "target": "select_counter_type"
+      }
+    ]
+  },
+  "atk_surprised_adult": {
+    "title": "ADULT / HUNTER SURPRISE ATTACK",
+    "text": "You drew an Intruder Attack Card.\nLook at the ADULT / HUNTER row.\n\nYou are SURPRISED — cannot react.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_outcome_escape"
+      },
+      {
+        "label": "2 WOUNDS  (2 blood drops)",
+        "target": "atk_outcome_2wounds"
+      },
+      {
+        "label": "3 WOUNDS  (3 blood drops)",
+        "target": "atk_outcome_3wounds"
+      },
+      {
+        "label": "GRAB + 1 WOUND  (hand + drop)",
+        "target": "atk_outcome_grab_1"
+      },
+      {
+        "label": "SERIOUS WOUND + 1 WOUND  (skull + drop)",
+        "target": "atk_outcome_serious_1"
+      },
+      {
+        "label": "CONTAMINATION  (egg symbol)",
+        "target": "atk_outcome_egg"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "atk_notsurprised_adult": {
+    "title": "ADULT / HUNTER ATTACKS",
+    "text": "You drew an Intruder Attack Card.\nLook at the ADULT / HUNTER row.\n\nYou are NOT surprised — you may react after.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "ESCAPE  (footstep / arrow)",
+        "target": "atk_notsurp_adult_escape"
+      },
+      {
+        "label": "2 WOUNDS  (2 blood drops)",
+        "target": "atk_notsurp_adult_w2"
+      },
+      {
+        "label": "3 WOUNDS  (3 blood drops)",
+        "target": "atk_notsurp_adult_w3"
+      },
+      {
+        "label": "GRAB + 1 WOUND  (hand + drop)",
+        "target": "atk_notsurp_adult_grab"
+      },
+      {
+        "label": "SERIOUS WOUND + 1 WOUND  (skull + drop)",
+        "target": "atk_notsurp_adult_serious"
+      },
+      {
+        "label": "CONTAMINATION  (egg symbol)",
+        "target": "atk_notsurp_adult_egg"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "atk_notsurp_adult_escape": {
+    "title": "ADULT: NO ATTACK",
+    "text": "The adult does not attack.\n\n✓ No wounds taken.\n\nYou may react:",
+    "options": [
+      {
+        "label": "FIGHT",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "END",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_notsurp_adult_w2": {
+    "title": "ADULT: 2 WOUNDS",
+    "text": "The adult slashes you — take 2 WOUNDS.\n\nDraw 2 wound cards face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_adult_w3": {
+    "title": "ADULT: 3 WOUNDS",
+    "text": "The adult tears into you — take 3 WOUNDS.\n\nDraw 3 wound cards face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_adult_grab": {
+    "title": "ADULT: GRABBED + 1 WOUND",
+    "text": "The adult grabs and wounds you!\n\n1. Draw 1 wound card face down.\n2. Place GRABBED token — you cannot move.\n\nTo break free: fight the adult.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "1 – 4 TOTAL — FIGHT TO BREAK FREE",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "5+ TOTAL — DYING",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_notsurp_adult_serious": {
+    "title": "ADULT: SERIOUS WOUND + 1 WOUND",
+    "text": "The adult deals a grievous blow!\n\n1. Draw 1 SERIOUS WOUND CARD — apply permanently.\n2. Draw 1 regular wound card face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_adult_egg": {
+    "title": "ADULT: CONTAMINATION",
+    "text": "The adult infects you!\n\nDraw 1 CONTAMINATION CARD — keep FACE DOWN.\n\nYou may react:",
+    "options": [
+      {
+        "label": "FIGHT BACK",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "END TURN",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_counter_queen": {
+    "title": "QUEEN / BREEDER ATTACKS",
+    "text": "You drew an Intruder Attack Card.\nLook at the QUEEN / BREEDER row.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "3 WOUNDS  (3 blood drops)",
+        "target": "atk_outcome_3wounds"
+      },
+      {
+        "label": "4 WOUNDS  (4 blood drops)",
+        "target": "atk_outcome_4wounds"
+      },
+      {
+        "label": "GRAB + 2 WOUNDS  (hand + 2 drops)",
+        "target": "atk_outcome_grab_2"
+      },
+      {
+        "label": "SERIOUS WOUND + 2 WOUNDS  (skull + 2 drops)",
+        "target": "atk_outcome_serious_2"
+      },
+      {
+        "label": "EGG LAID + 1 WOUND  (egg + drop)",
+        "target": "atk_outcome_egg_1wound"
+      },
+      {
+        "label": "BACK",
+        "target": "select_counter_type"
+      }
+    ]
+  },
+  "atk_surprised_queen": {
+    "title": "QUEEN / BREEDER SURPRISE ATTACK",
+    "text": "You drew an Intruder Attack Card.\nLook at the QUEEN / BREEDER row.\n\nYou are SURPRISED — cannot react.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "3 WOUNDS  (3 blood drops)",
+        "target": "atk_outcome_3wounds"
+      },
+      {
+        "label": "4 WOUNDS  (4 blood drops)",
+        "target": "atk_outcome_4wounds"
+      },
+      {
+        "label": "GRAB + 2 WOUNDS  (hand + 2 drops)",
+        "target": "atk_outcome_grab_2"
+      },
+      {
+        "label": "SERIOUS WOUND + 2 WOUNDS  (skull + 2 drops)",
+        "target": "atk_outcome_serious_2"
+      },
+      {
+        "label": "EGG LAID + 1 WOUND  (egg + drop)",
+        "target": "atk_outcome_egg_1wound"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "atk_notsurprised_queen": {
+    "title": "QUEEN / BREEDER ATTACKS",
+    "text": "You drew an Intruder Attack Card.\nLook at the QUEEN / BREEDER row.\n\nYou are NOT surprised — you may react after.\n\nWhat symbol does it show?",
+    "options": [
+      {
+        "label": "3 WOUNDS  (3 blood drops)",
+        "target": "atk_notsurp_queen_w3"
+      },
+      {
+        "label": "4 WOUNDS  (4 blood drops)",
+        "target": "atk_notsurp_queen_w4"
+      },
+      {
+        "label": "GRAB + 2 WOUNDS  (hand + 2 drops)",
+        "target": "atk_notsurp_queen_grab"
+      },
+      {
+        "label": "SERIOUS WOUND + 2 WOUNDS  (skull + 2 drops)",
+        "target": "atk_notsurp_queen_serious"
+      },
+      {
+        "label": "EGG LAID + 1 WOUND  (egg + drop)",
+        "target": "atk_notsurp_queen_egg"
+      },
+      {
+        "label": "BACK",
+        "target": "encounter_menu"
+      }
+    ]
+  },
+  "atk_notsurp_queen_w3": {
+    "title": "QUEEN: 3 WOUNDS",
+    "text": "The queen strikes hard — take 3 WOUNDS.\n\nDraw 3 wound cards face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_queen_w4": {
+    "title": "QUEEN: 4 WOUNDS",
+    "text": "The queen devastates you — take 4 WOUNDS.\n\nDraw 4 wound cards face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_queen_grab": {
+    "title": "QUEEN: GRABBED + 2 WOUNDS",
+    "text": "The queen seizes you and tears flesh!\n\n1. Draw 2 wound cards face down.\n2. Place GRABBED token — you cannot move.\n\nTo break free: fight the queen.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "1 – 4 TOTAL — FIGHT TO BREAK FREE",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "5+ TOTAL — DYING",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "atk_notsurp_queen_serious": {
+    "title": "QUEEN: SERIOUS WOUND + 2 WOUNDS",
+    "text": "The queen inflicts a catastrophic wound!\n\n1. Draw 1 SERIOUS WOUND CARD — apply permanently.\n2. Draw 2 regular wound cards face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "atk_notsurp_queen_egg": {
+    "title": "QUEEN: EGG LAID + 1 WOUND",
+    "text": "The queen lays an egg and wounds you!\n\n1. Draw 1 CONTAMINATION CARD — keep FACE DOWN.\n2. Draw 1 wound card face down.\n\nHow many total wound cards now?",
+    "options": [
+      {
+        "label": "APPLY WOUND(S) THEN FIGHT BACK",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN ESCAPE",
+        "target": "wound_apply"
+      },
+      {
+        "label": "APPLY WOUND(S) THEN END TURN",
+        "target": "wound_apply"
+      }
+    ]
+  },
+  "char_hub": {
+    "title": "CHARACTER ABILITIES",
+    "text": "Select your character to see all their abilities.",
+    "options": [
+      {
+        "label": "SOLDIER",
+        "target": "char_soldier"
+      },
+      {
+        "label": "CAPTAIN",
+        "target": "char_captain"
+      },
+      {
+        "label": "SCOUT",
+        "target": "char_scout"
+      },
+      {
+        "label": "PILOT",
+        "target": "char_pilot"
+      },
+      {
+        "label": "SCIENTIST",
+        "target": "char_scientist"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "char_soldier": {
+    "title": "SOLDIER",
+    "text": "Starting weapon: ASSAULT RIFLE  (5 ammo)\nQuest bonus: +1 injury whenever you deal\nat least 1 injury.\n\nUNIQUE ABILITIES:",
+    "options": [
+      {
+        "label": "TAKING AIM",
+        "target": "ability_taking_aim"
+      },
+      {
+        "label": "COVERING FIRE",
+        "target": "ability_covering_fire"
+      },
+      {
+        "label": "FULL AUTO",
+        "target": "ability_full_auto"
+      },
+      {
+        "label": "BASIC REPAIRS",
+        "target": "ability_basic_repairs"
+      },
+      {
+        "label": "NERVES OF STEEL",
+        "target": "ability_nerves_of_steel"
+      },
+      {
+        "label": "BACK",
+        "target": "char_hub"
+      }
+    ]
+  },
+  "char_captain": {
+    "title": "CAPTAIN",
+    "text": "Starting weapon: SIX-SHOOTER  (6 ammo)\nQuest bonus: +1 injury on double-injury roll.\n\nUNIQUE ABILITIES:",
+    "options": [
+      {
+        "label": "RELOAD",
+        "target": "ability_reload"
+      },
+      {
+        "label": "SUPPRESSIVE FIRE",
+        "target": "ability_suppressive_fire"
+      },
+      {
+        "label": "ORDER",
+        "target": "ability_order"
+      },
+      {
+        "label": "MOTIVATION",
+        "target": "ability_motivation"
+      },
+      {
+        "label": "BACK",
+        "target": "char_hub"
+      }
+    ]
+  },
+  "char_scout": {
+    "title": "SCOUT",
+    "text": "Starting weapon: RIFLE  (4 ammo)\nTrait: SCAVENGER — when searching a white room,\ndraw from all 3 item decks, keep 1.\n\nUNIQUE ABILITIES:",
+    "options": [
+      {
+        "label": "SCAVENGING",
+        "target": "ability_scavenging"
+      },
+      {
+        "label": "RECONNAISSANCE",
+        "target": "ability_reconnaissance"
+      },
+      {
+        "label": "ADRENALINE",
+        "target": "ability_adrenaline_escape"
+      },
+      {
+        "label": "SUPPRESSIVE FIRE",
+        "target": "ability_suppressive_fire"
+      },
+      {
+        "label": "BACK",
+        "target": "char_hub"
+      }
+    ]
+  },
+  "char_pilot": {
+    "title": "PILOT",
+    "text": "Starting weapon: RIFLE  (4 ammo)\n\nUNIQUE ABILITIES:",
+    "options": [
+      {
+        "label": "RESPITE",
+        "target": "ability_respite"
+      },
+      {
+        "label": "IMPROVISED WEAPON",
+        "target": "ability_improvised_weapon"
+      },
+      {
+        "label": "REPAIRS",
+        "target": "ability_repairs"
+      },
+      {
+        "label": "BACKDOOR",
+        "target": "ability_backdoor"
+      },
+      {
+        "label": "COMPUTER SKILLS",
+        "target": "ability_computer_skills"
+      },
+      {
+        "label": "BACK",
+        "target": "char_hub"
+      }
+    ]
+  },
+  "char_scientist": {
+    "title": "SCIENTIST",
+    "text": "Starting weapon: PISTOL  (energy weapon)\n\nUNIQUE ABILITIES:",
+    "options": [
+      {
+        "label": "RISK ASSESSMENT",
+        "target": "ability_risk_assessment"
+      },
+      {
+        "label": "BLOCKING ACCESS",
+        "target": "ability_blocking_access"
+      },
+      {
+        "label": "COMPUTER SKILLS",
+        "target": "ability_computer_skills"
+      },
+      {
+        "label": "INTRANET",
+        "target": "ability_intranet"
+      },
+      {
+        "label": "BACK",
+        "target": "char_hub"
+      }
+    ]
+  },
+  "ability_taking_aim": {
+    "title": "TAKING AIM  (Soldier)",
+    "text": "COST: Part of your Attack action\n\nAfter rolling your attack dice, you may\nREROLL any one die once.\n\nSteps:\n1. Roll your weapon's dice as normal.\n2. Pick ONE die you don't like.\n3. Reroll that single die.\n4. Keep the new result — you cannot reroll again.\n5. Count total hits and apply wounds.\n\n⚠ Can only be used ONCE per attack action.",
+    "options": [
+      {
+        "label": "NOW COUNT HITS",
+        "target": "player_hit_1"
+      },
+      {
+        "label": "ROLL MELEE DICE",
+        "target": "combat_melee"
+      },
+      {
+        "label": "ROLL RANGED DICE",
+        "target": "combat_ranged_dice"
+      },
+      {
+        "label": "BACK TO SOLDIER",
+        "target": "char_soldier"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_covering_fire": {
+    "title": "COVERING FIRE  (Soldier)",
+    "text": "COST: 1 Action Token + 1 AMMO from your weapon\n\nEffect:\nSpend 1 ammo to allow YOURSELF and/or\nANOTHER PLAYER in the same room to escape\nWITHOUT drawing an Intruder Attack Card.\n\nSteps:\n1. Spend 1 Action Token.\n2. Discard 1 ammo from your weapon.\n3. Choose yourself and/or one other player\n   in the room.\n4. Chosen players each move to any adjacent room.\n5. Each escaping player makes a NOISE CHECK.\n\n✓ No Intruder Attack Card drawn — guaranteed escape!",
+    "options": [
+      {
+        "label": "MAKE NOISE CHECK",
+        "target": "noise_roll"
+      },
+      {
+        "label": "BACK TO SOLDIER",
+        "target": "char_soldier"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_full_auto": {
+    "title": "FULL AUTO  (Soldier)",
+    "text": "COST: 1 Action Token + ALL remaining ammo\n\nEffect:\nSpend ALL ammo in your Assault Rifle.\nFor every 2 ammo spent, deal +1 additional injury\non top of any dice results.\nWorks even if you MISS (roll zero hits)!\n\nSteps:\n1. Spend 1 Action Token.\n2. Discard ALL ammo tokens from your weapon.\n3. Roll the weapon's dice as normal.\n4. Count hits from dice.\n5. Add +1 injury per 2 ammo spent.\n   (e.g. 4 ammo spent = +2 bonus injuries)\n6. Apply total wounds to intruder.\n\nHow many ammo did you spend?",
+    "options": [
+      {
+        "label": "2 AMMO  (+1 bonus)",
+        "target": "full_auto_2"
+      },
+      {
+        "label": "4 AMMO  (+2 bonus)",
+        "target": "full_auto_4"
+      },
+      {
+        "label": "5 AMMO  (+2 bonus)",
+        "target": "full_auto_4"
+      },
+      {
+        "label": "BACK TO SOLDIER",
+        "target": "char_soldier"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "full_auto_2": {
+    "title": "FULL AUTO — 2 AMMO",
+    "text": "You spent 2 ammo → +1 bonus injury guaranteed.\n\nNow roll your dice.\nHow many hit symbols did you roll?",
+    "options": [
+      {
+        "label": "0 HITS  (miss — but +1 bonus = 1 total)",
+        "target": "full_auto_result_1"
+      },
+      {
+        "label": "1 HIT   (+1 bonus = 2 total)",
+        "target": "full_auto_result_2"
+      },
+      {
+        "label": "2 HITS  (+1 bonus = 3 total)",
+        "target": "full_auto_result_3"
+      },
+      {
+        "label": "3 HITS  (+1 bonus = 4 total)",
+        "target": "full_auto_result_4"
+      },
+      {
+        "label": "BACK",
+        "target": "ability_full_auto"
+      }
+    ]
+  },
+  "full_auto_4": {
+    "title": "FULL AUTO — 4–5 AMMO",
+    "text": "You spent 4–5 ammo → +2 bonus injuries guaranteed.\n\nNow roll your dice.\nHow many hit symbols did you roll?",
+    "options": [
+      {
+        "label": "0 HITS  (miss — but +2 bonus = 2 total)",
+        "target": "full_auto_result_2"
+      },
+      {
+        "label": "1 HIT   (+2 bonus = 3 total)",
+        "target": "full_auto_result_3"
+      },
+      {
+        "label": "2 HITS  (+2 bonus = 4 total)",
+        "target": "full_auto_result_4"
+      },
+      {
+        "label": "3 HITS  (+2 bonus = 5 total)",
+        "target": "full_auto_result_5"
+      },
+      {
+        "label": "BACK",
+        "target": "ability_full_auto"
+      }
+    ]
+  },
+  "full_auto_result_1": {
+    "title": "FULL AUTO — 1 TOTAL WOUND",
+    "text": "Apply 1 wound token to the intruder.\n\nIntruder health reference:\n  Larva → 1 wound = dead\n  Creeper → 3 wounds = dead\n  Adult → 4 wounds = dead\n  Queen → 6 wounds = dead\n\nIs the intruder dead?",
+    "options": [
+      {
+        "label": "YES — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "NO — COUNTER-ATTACKS",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "full_auto_result_2": {
+    "title": "FULL AUTO — 2 TOTAL WOUNDS",
+    "text": "Apply 2 wound tokens to the intruder.\n\nIntruder health reference:\n  Larva → 1 wound = dead\n  Creeper → 3 wounds = dead\n  Adult → 4 wounds = dead\n  Queen → 6 wounds = dead\n\nIs the intruder dead?",
+    "options": [
+      {
+        "label": "YES — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "NO — COUNTER-ATTACKS",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "full_auto_result_3": {
+    "title": "FULL AUTO — 3 TOTAL WOUNDS",
+    "text": "Apply 3 wound tokens to the intruder.\n\nIntruder health reference:\n  Larva → 1 wound = dead\n  Creeper → 3 wounds = dead\n  Adult → 4 wounds = dead\n  Queen → 6 wounds = dead\n\nIs the intruder dead?",
+    "options": [
+      {
+        "label": "YES — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "NO — COUNTER-ATTACKS",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "full_auto_result_4": {
+    "title": "FULL AUTO — 4 TOTAL WOUNDS",
+    "text": "Apply 4 wound tokens to the intruder.\n\nIntruder health reference:\n  Larva → 1 wound = dead\n  Creeper → 3 wounds = dead\n  Adult → 4 wounds = dead\n  Queen → 6 wounds = dead\n\nIs the intruder dead?",
+    "options": [
+      {
+        "label": "YES — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "NO — COUNTER-ATTACKS",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "full_auto_result_5": {
+    "title": "FULL AUTO — 5 TOTAL WOUNDS",
+    "text": "Apply 5 wound tokens to the intruder.\n\nIntruder health reference:\n  Larva → 1 wound = dead\n  Creeper → 3 wounds = dead\n  Adult → 4 wounds = dead\n  Queen → 6 wounds = dead\n\nIs the intruder dead?",
+    "options": [
+      {
+        "label": "YES — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "NO — COUNTER-ATTACKS",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_basic_repairs": {
+    "title": "BASIC REPAIRS  (Soldier)",
+    "text": "COST: 1 Action Token\n\nEffect:\nDiscard 1 MALFUNCTION MARKER from any\nroom system in your current room.\n\nSteps:\n1. Spend 1 Action Token.\n2. Remove 1 Malfunction marker from a\n   room system token in this room.\n3. The system functions normally again.\n\nUseful for repairing doors, engines, etc.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO SOLDIER",
+        "target": "char_soldier"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_nerves_of_steel": {
+    "title": "NERVES OF STEEL  (Soldier)",
+    "text": "COST: No action cost — passive ability\n\nEffect:\nYou IGNORE a Surprise Attack.\n\nSteps:\n1. An encounter begins and you would be surprised.\n2. Declare NERVES OF STEEL.\n3. The surprise is negated — treat it as if you\n   were NOT surprised.\n4. You may now fight back or escape normally.\n\n✓ No Intruder Attack Card is drawn for the\n  surprise — you act first!\n\nWhat do you do?",
+    "options": [
+      {
+        "label": "FIGHT THE INTRUDER",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "END ENCOUNTER",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_reload": {
+    "title": "RELOAD  (Captain)",
+    "text": "COST: 1 Action Token\n\nEffect:\nAdd 1 AMMO TOKEN to your Six-Shooter.\n\nSteps:\n1. Spend 1 Action Token.\n2. Add 1 ammo token to your Six-Shooter.\n3. Cannot exceed the weapon's maximum capacity.\n\nThe Six-Shooter starts with 6 ammo and can\nbe reloaded back up to 6 at any time.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO CAPTAIN",
+        "target": "char_captain"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_suppressive_fire": {
+    "title": "SUPPRESSIVE FIRE  (Captain / Scout)",
+    "text": "COST: 1 Action Token\n\nEffect:\nYou OR another player in the same room\nescapes to an adjacent room WITHOUT drawing\nan Intruder Attack Card.\n\nSteps:\n1. Spend 1 Action Token.\n2. Choose yourself or one other player here.\n3. Chosen player moves to any adjacent room.\n4. Chosen player makes a NOISE CHECK.\n\n✓ Guaranteed safe escape — no attack card drawn!\n✓ The intruder stays in the current room.",
+    "options": [
+      {
+        "label": "MAKE NOISE CHECK",
+        "target": "noise_roll"
+      },
+      {
+        "label": "BACK TO CAPTAIN",
+        "target": "char_captain"
+      },
+      {
+        "label": "BACK TO SCOUT",
+        "target": "char_scout"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_order": {
+    "title": "ORDER  (Captain)",
+    "text": "COST: 1 Action Token\n\nEffect:\nForce or allow another player to move to\nan adjacent room — with or without their consent.\n\nSteps:\n1. Spend 1 Action Token.\n2. Choose any player in your current room.\n3. That player moves to any room adjacent\n   to their current location.\n4. The moved player makes a NOISE CHECK\n   in their new room.\n5. If the new room has an intruder:\n   → That player triggers an encounter.\n\n⚠ Use carefully — you can move allies into danger!",
+    "options": [
+      {
+        "label": "MOVED PLAYER — NOISE CHECK",
+        "target": "noise_roll"
+      },
+      {
+        "label": "MOVED INTO INTRUDER ROOM",
+        "target": "encounter_on_entry"
+      },
+      {
+        "label": "BACK TO CAPTAIN",
+        "target": "char_captain"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_motivation": {
+    "title": "MOTIVATION  (Captain)",
+    "text": "COST: 1 Action Token\n\nEffect:\nAll characters in the same room each draw\n1 Action Card.\n\nSteps:\n1. Spend 1 Action Token.\n2. Every player figure in your current room\n   (including yourself) draws 1 action card.\n\nUseful for giving your team more options\nwhen grouped together.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO CAPTAIN",
+        "target": "char_captain"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_scavenging": {
+    "title": "SCAVENGING  (Scout)",
+    "text": "COST: 1 Action Token\n\nEffect:\nSearch a room EVEN IF it already has a\nSearch Marker (already been searched).\n\nSteps:\n1. Spend 1 Action Token.\n2. Search this room normally — draw 1 item card.\n3. The Search Marker stays (room is still 'used').\n\n⚠ If an intruder is in the room:\n  Still triggers an encounter first!\n\nIs there an intruder in this room?",
+    "options": [
+      {
+        "label": "YES — ENCOUNTER FIRST",
+        "target": "encounter_same_room"
+      },
+      {
+        "label": "NO — DRAW ITEM",
+        "target": "search_draw_item"
+      },
+      {
+        "label": "BACK TO SCOUT",
+        "target": "char_scout"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_scavenger_trait": {
+    "title": "SCAVENGER TRAIT  (Scout)",
+    "text": "PASSIVE TRAIT — applies when searching a\nWHITE ROOM (unsearched).\n\nEffect:\nInstead of drawing from 1 item deck,\ndraw 1 card from EACH of the 3 item decks\n(Red, Green, Yellow).\nKeep 1 card and discard the other 2.\n\nSteps:\n1. Draw 1 card from the Red (Military) deck.\n2. Draw 1 card from the Green (Medical) deck.\n3. Draw 1 card from the Yellow (Technical) deck.\n4. Choose 1 to keep.\n5. Discard the other 2 face down.\n6. Place a Search Marker on the room.\n\n⚠ Only applies in rooms with no Search Marker.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO SCOUT",
+        "target": "char_scout"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_reconnaissance": {
+    "title": "RECONNAISSANCE  (Scout)",
+    "text": "COST: 1 Action Token\n\nEffect:\nMove to an adjacent room with NO NOISE CHECK\n(same as Careful Move, but this is the Scout's\nunique named version).\n\nSteps:\n1. Spend 1 Action Token.\n2. Move to any adjacent room.\n3. NO noise die rolled — no noise token placed.\n\n⚠ Still triggers an encounter if the destination\n  room has an intruder.\n\nIs there an intruder in the destination room?",
+    "options": [
+      {
+        "label": "YES — ENCOUNTER",
+        "target": "encounter_on_entry"
+      },
+      {
+        "label": "NO — MOVED SILENTLY",
+        "target": "careful_move_done"
+      },
+      {
+        "label": "BACK TO SCOUT",
+        "target": "char_scout"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_adrenaline_escape": {
+    "title": "ADRENALINE  (Scout)",
+    "text": "COST: 1 Action Token\n\nEffect:\nSHOOT at an intruder OR ESCAPE, AND\ndraw 1 Action Card as a bonus.\n\nIf SHOOTING:\n1. Make a ranged attack as normal.\n2. After resolving, draw 1 Action Card.\n\nIf ESCAPING:\n1. Draw 1 Intruder Attack Card (standard escape).\n2. Move to adjacent room + noise check.\n3. After resolving, draw 1 Action Card.\n\nWhat are you doing?",
+    "options": [
+      {
+        "label": "SHOOT  (then draw card)",
+        "target": "combat_ranged"
+      },
+      {
+        "label": "ESCAPE (then draw card)",
+        "target": "escape_standard"
+      },
+      {
+        "label": "BACK TO SCOUT",
+        "target": "char_scout"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_respite": {
+    "title": "RESPITE  (Pilot)",
+    "text": "COST: 1 Action Token\n\nRequirement: Must be in a room WITH POWER.\n\nEffect:\nDraw 2 Action Cards.\n\nSteps:\n1. Confirm your current room has power\n   (no Power Failure token).\n2. Spend 1 Action Token.\n3. Draw 2 Action Cards into your hand.\n\nA great way to stockpile actions for\nfuture abilities or emergencies.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO PILOT",
+        "target": "char_pilot"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_improvised_weapon": {
+    "title": "IMPROVISED WEAPON  (Pilot)",
+    "text": "COST: 1 Action Token\n\nRequirement: Must be carrying a HEAVY ITEM.\n\nEffect:\nUse a heavy item as a weapon to deal\n1 INJURY to an intruder in the same room.\n\nSteps:\n1. Spend 1 Action Token.\n2. Confirm you hold a Heavy Item.\n3. Deal 1 wound to the intruder — no dice roll!\n4. The intruder then COUNTER-ATTACKS.\n\n⚠ The heavy item is NOT consumed — you keep it.\n\nApply 1 wound. Is the intruder dead?",
+    "options": [
+      {
+        "label": "YES — DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "NO — COUNTER-ATTACKS",
+        "target": "select_counter_type"
+      },
+      {
+        "label": "BACK TO PILOT",
+        "target": "char_pilot"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_repairs": {
+    "title": "REPAIRS  (Pilot)",
+    "text": "COST: 1 Action Token + 1 Card\n(instead of the normal 2 cards)\n\nEffect:\nDiscard 1 Malfunction Marker from a room\nsystem at a reduced card cost.\n\nSteps:\n1. Spend 1 Action Token.\n2. Discard 1 Action Card from your hand.\n3. Remove 1 Malfunction Marker from\n   a room system in your current room.\n4. That system functions normally again.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO PILOT",
+        "target": "char_pilot"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_backdoor": {
+    "title": "BACKDOOR  (Pilot)",
+    "text": "COST: 1 Action Token\n\nRequirement: Must be in a COMPUTER ROOM\nwith power.\n\nEffect (choose one):\n• Send a signal / activate CSS token remotely.\n• Peek at a CSS token in any computer room\n  on the ship.\n\nSteps:\n1. Spend 1 Action Token.\n2. Choose the effect.\n3. Apply immediately.\n\nUseful for accessing information or\ntriggering ship functions remotely.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO PILOT",
+        "target": "char_pilot"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_computer_skills": {
+    "title": "COMPUTER SKILLS  (Pilot / Scientist)",
+    "text": "COST: FREE  (no Action Token)\n\nRequirement: Must be in a COMPUTER ROOM\nwith power.\n\nEffect (choose one for free):\n• Open or Close any door on the ship.\n• Use the current room's special action\n  without spending an Action Token.\n\nSteps:\n1. Declare Computer Skills.\n2. Choose: Open/Close Door OR Room Action.\n3. Resolve the chosen effect for free.\n\n✓ Does NOT cost an Action Token.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO PILOT",
+        "target": "char_pilot"
+      },
+      {
+        "label": "BACK TO SCIENTIST",
+        "target": "char_scientist"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_risk_assessment": {
+    "title": "RISK ASSESSMENT  (Scientist)",
+    "text": "COST: 1 Action Token\n\nRequirement: Must be in a COMPUTER ROOM\nwith power (unless Quest Item bonus applies).\n\nEffect:\nLook at the next EVENT CARD on the deck.\nThen return it to the TOP or BOTTOM of the deck.\n\nSteps:\n1. Spend 1 Action Token.\n2. Secretly look at the top Event Card.\n3. Return it to the TOP (let it happen next round)\n   OR to the BOTTOM (delay it significantly).\n\nInvaluable for avoiding dangerous events!",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO SCIENTIST",
+        "target": "char_scientist"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_blocking_access": {
+    "title": "BLOCKING ACCESS  (Scientist)",
+    "text": "COST: 1 Action Token\n\nRequirement: Must be in a COMPUTER ROOM\nwith power.\n\nEffect (choose one):\n• Use the computer room's action for FREE.\n• Place a Malfunction Marker on any room\n  system accessible from this computer.\n\nSteps:\n1. Spend 1 Action Token.\n2. Choose your effect.\n3. Apply immediately.\n\nSabotage can be used tactically to block\nintruder movement or deny resources.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO SCIENTIST",
+        "target": "char_scientist"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "ability_intranet": {
+    "title": "INTRANET  (Scientist)",
+    "text": "COST: 1 Action Token\n\nRequirement: Must be in a COMPUTER ROOM\nwith power.\n\nEffect:\nUse the special action of ANY OTHER computer\nroom on the ship — without being there!\n\nSteps:\n1. Spend 1 Action Token.\n2. Choose any powered computer room\n   elsewhere on the ship.\n3. Use that room's special action as if\n   you were standing in it.\n\nExtremely powerful — lets you access distant\nship systems without travelling.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "BACK TO SCIENTIST",
+        "target": "char_scientist"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "weapon_hub": {
+    "title": "WEAPON ABILITIES",
+    "text": "Select a weapon to see its special rules.",
+    "options": [
+      {
+        "label": "ASSAULT RIFLE  (Soldier)",
+        "target": "weapon_assault_rifle"
+      },
+      {
+        "label": "SIX-SHOOTER  (Captain)",
+        "target": "weapon_six_shooter"
+      },
+      {
+        "label": "RIFLE  (Pilot / Scout)",
+        "target": "weapon_rifle"
+      },
+      {
+        "label": "PISTOL  (Scientist)",
+        "target": "weapon_pistol"
+      },
+      {
+        "label": "GRENADE",
+        "target": "weapon_grenade"
+      },
+      {
+        "label": "SMOKE GRENADE",
+        "target": "weapon_smoke_grenade"
+      },
+      {
+        "label": "FLAMETHROWER",
+        "target": "weapon_flamethrower"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "weapon_assault_rifle": {
+    "title": "ASSAULT RIFLE  (Soldier)",
+    "text": "Ammo capacity: 5\nWeapon type: Ranged\n\nStandard use:\n• Discard ammo tokens as shown.\n• Roll dice and count hits.\n\nQUEST ITEM BONUS (if equipped):\n• Each time you deal at least 1 injury,\n  deal 1 ADDITIONAL injury on top.\n\nSOLDIER SPECIAL: FULL AUTO\n• Spend ALL remaining ammo.\n• For every 2 ammo spent: +1 bonus injury.\n• Works even on a complete miss!\n\nSOLDIER SPECIAL: TAKING AIM\n• After rolling, reroll 1 die of your choice.",
+    "options": [
+      {
+        "label": "FULL AUTO",
+        "target": "ability_full_auto"
+      },
+      {
+        "label": "TAKING AIM",
+        "target": "ability_taking_aim"
+      },
+      {
+        "label": "STANDARD USE",
+        "target": "combat_ranged"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "weapon_six_shooter": {
+    "title": "SIX-SHOOTER  (Captain)",
+    "text": "Ammo capacity: 6\nWeapon type: Ranged\n\nStandard use:\n• Discard ammo tokens as shown on card.\n• Roll dice and count hits.\n\nQUEST ITEM BONUS (if equipped):\n• When you roll DOUBLE INJURY symbols,\n  deal 1 ADDITIONAL injury on top.\n\nCAPTAIN SPECIAL: RELOAD\n• Cost: 1 Action Token.\n• Add 1 ammo back to this weapon.\n• Can be used multiple times per game.",
+    "options": [
+      {
+        "label": "RELOAD",
+        "target": "ability_reload"
+      },
+      {
+        "label": "STANDARD USE",
+        "target": "combat_ranged"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "weapon_rifle": {
+    "title": "RIFLE  (Pilot / Scout)",
+    "text": "Ammo capacity: 4\nWeapon type: Ranged\n\nStandard use:\n• Discard ammo tokens as shown.\n• Roll dice and count hits.\n\nNo special built-in abilities beyond the\ncharacter's own skills.\n\nSCOUT: Can combine with ADRENALINE\n  (shoot + draw 1 card).\n\nPILOT: Can use IMPROVISED WEAPON instead\n  if carrying a heavy item (1 free injury).",
+    "options": [
+      {
+        "label": "ADRENALINE SHOOT + DRAW",
+        "target": "ability_adrenaline_escape"
+      },
+      {
+        "label": "IMPROVISED WEAPON",
+        "target": "ability_improvised_weapon"
+      },
+      {
+        "label": "STANDARD USE",
+        "target": "combat_ranged"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "weapon_pistol": {
+    "title": "PISTOL  (Scientist)",
+    "text": "Ammo capacity: varies (energy weapon)\nWeapon type: Ranged\n\nStandard use:\n• Discard ammo / energy tokens as shown.\n• Roll dice and count hits.\n\nNo special built-in weapon abilities.\n\nCombine with Scientist's COMPUTER SKILLS\nor INTRANET for strategic advantages\nbefore entering combat.",
+    "options": [
+      {
+        "label": "STANDARD USE",
+        "target": "combat_ranged"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "weapon_grenade": {
+    "title": "WEAPON: GRENADE",
+    "text": "Weapon type: Thrown / Single-use\nAmmo cost: none (discard the card itself)\n\nSPECIAL RULES:\n• AREA EFFECT — hits ALL intruders in\n  the target room.\n• No attack dice — automatic hit on all targets.\n• Also hits any PLAYERS in the target room!\n• Can be thrown into an ADJACENT room.\n\nSteps:\n1. Spend 1 Action Token.\n2. Discard the Grenade card.\n3. Choose current room or an adjacent room.\n4. Deal injuries to ALL intruders in that room\n   (check card for damage amount).\n5. If any players are in that room: they also\n   take damage — apply wounds to each.\n\nAre there players in the target room?",
+    "options": [
+      {
+        "label": "YES — APPLY WOUNDS TO PLAYERS TOO",
+        "target": "wound_apply"
+      },
+      {
+        "label": "NO — ONLY INTRUDERS AFFECTED",
+        "target": "player_hit_2"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "weapon_smoke_grenade": {
+    "title": "WEAPON: SMOKE GRENADE",
+    "text": "Weapon type: Thrown / Single-use\nAmmo cost: none (discard the card itself)\n\nSPECIAL RULES:\n• NOT a damage weapon — no wounds dealt.\n• ESCAPE TOOL — allows guaranteed escape.\n\nSteps:\n1. Spend 1 Action Token.\n2. Discard the Smoke Grenade card.\n3. You AND any players in the same room\n   may each escape to an adjacent room.\n4. NO Intruder Attack Card is drawn.\n5. Each escaping player makes a NOISE CHECK.\n\n✓ Guaranteed escape with no damage risk!\n✓ Works for multiple players at once.",
+    "options": [
+      {
+        "label": "MAKE NOISE CHECK",
+        "target": "noise_roll"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "weapon_flamethrower": {
+    "title": "WEAPON: FLAMETHROWER",
+    "text": "Weapon type: Ranged (crafted) / Area effect\nCrafted from: Fire Extinguisher + Chemicals + Zippo\n\nSPECIAL RULES:\n• AREA EFFECT — deals damage to ALL intruders\n  in the same room.\n• Places a FIRE TOKEN in the room after use.\n• Also hits any PLAYERS in the room!\n\nSteps:\n1. Spend 1 Action Token + ammo cost.\n2. Roll the flamethrower's attack dice.\n3. Each hit = 1 wound on EVERY intruder in room.\n4. Place a FIRE TOKEN in the room.\n5. Any player in the room takes fire damage.\n\n⚠ You are also in the room — you take fire damage\n  at the start of your next turn!\n\nAre there players (including you) in the room?",
+    "options": [
+      {
+        "label": "YES — FIRE ROOM RULES APPLY",
+        "target": "fire_in_room"
+      },
+      {
+        "label": "NO OTHER PLAYERS — ROLL DICE",
+        "target": "combat_ranged_dice"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "passing_rules": {
+    "title": "PASSING YOUR ROUND",
+    "text": "Pass is a deliberate ACTION — it is not automatic.\n\nRules:\n• You may Pass at any point during your round.\n• Flip your Help card to the PASS side.\n• You may discard cards when you pass.\n• A passed player CANNOT act again this phase.\n\n⚠ Having NO cards in hand does NOT auto-pass.\n  If you used both actions and end up with no\n  cards, you must WAIT for next turn to pass.\n  This may mean taking extra Fire or Bleed damage.\n\n⚠ INTERRUPTION cards CAN still be played even\n  after you have passed your round.\n\nPhase ends when ALL players have passed.",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "in_combat_restrictions": {
+    "title": "ACTIONS IN COMBAT",
+    "text": "When you share a room with an intruder you are\nIN COMBAT. Restrictions apply:\n\nYOU CAN:\n• SHOOT (Shoot action)\n• MELEE (Melee attack)\n• ESCAPE (Basic Move only — NOT Careful Move)\n• Use items/cards WITHOUT the 'not in combat' icon\n• Play INTERRUPTION cards\n\nYOU CANNOT:\n• Use ROOM ACTIONS\n• Activate QUEST ITEMS\n• Use CAREFUL MOVE to escape\n• Take any action with the 'not in combat' icon\n\n⚠ Hand Serious Wound does NOT add extra cost\n  to Shoot — Shoot is a basic action.",
+    "options": [
+      {
+        "label": "FIGHT",
+        "target": "combat_player_attacks"
+      },
+      {
+        "label": "ESCAPE",
+        "target": "escape_attempt"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "action_trade": {
+    "title": "ACTION: TRADE",
+    "text": "COST: 1 Action Card\n\nTrade items with characters in the same room.\n\nRules:\n• All characters in the room may trade with\n  each other — even those who didn't pay.\n• An exchange between two characters who didn't\n  pay the action cost IS allowed.\n\n⚠ CANNOT be used in Combat.\n⚠ Cannot perform an empty trade (no items\n  actually exchanged — that wastes an action\n  which is not allowed).\n\nENERGY CHARGE: Cannot be used to reload another\nplayer's weapon directly. Must be traded first,\nthen the owner uses it themselves.",
+    "options": [
+      {
+        "label": "TAKE ANOTHER ACTION",
+        "target": "player_actions_menu"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "first_encounter_objectives": {
+    "title": "FIRST INTRUDER — CHOOSE OBJECTIVES",
+    "text": "The FIRST intruder miniature has appeared!\n\nIMMEDIATELY — all players must choose:\n\n1. Each player looks at their TWO Objective cards.\n2. Each player secretly chooses ONE to keep.\n3. The unchosen card is removed from the game\n   FACE DOWN — do not reveal it.\n\nThis must be done before anything else resolves.\n\nAfter everyone has chosen, continue the game.",
+    "options": [
+      {
+        "label": "OBJECTIVES CHOSEN — CONTINUE",
+        "target": "home"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "first_death_pods": {
+    "title": "FIRST CHARACTER DEATH — PODS UNLOCK",
+    "text": "The first character has died!\n\nIMMEDIATELY:\nAll ESCAPE PODS automatically unlock.\nFlip all Escape Pod tokens to the Unlocked side.\n\nThis happens regardless of who caused the death\nor what their objective was.\n\n⚠ Pods can be LOCKED again manually afterward.\n  If the Self-Destruct reaches a yellow space,\n  pods also unlock (but must be re-unlocked\n  manually if locked again — not automatic).",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "surgery_room": {
+    "title": "SURGERY ROOM",
+    "text": "SURGERY ROOM ACTION\n\nSteps:\n1. Discard ALL cards from your hand.\n2. Shuffle them with all cards from your\n   action deck and discard pile.\n3. Scan ALL contamination cards.\n4. Remove all INFECTED contamination cards.\n5. Keep all NON-INFECTED contamination cards.\n6. Reshuffle everything to create a new deck.\n7. You pass your round (no cards left).\n\n⚠ Unlike Antidote, Surgery requires discarding\n  your hand — you pass with NO cards.\n\nAfter surgery: no contamination cards removed\nare replaced — you just lose the infected ones.",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "antidote_item": {
+    "title": "ANTIDOTE ITEM",
+    "text": "USING ANTIDOTE\n\nSteps:\n1. Scan ALL contamination cards:\n   from hand, discard pile, and action deck.\n2. REMOVE all INFECTED contamination cards.\n3. Draw 1 new CONTAMINATION CARD (take a risk).\n4. Reshuffle everything (the new card + remaining\n   non-infected cards + all action cards, EXCEPT\n   cards currently in your hand) into new deck.\n5. You must PASS your round after using Antidote.\n\n✓ Unlike Surgery, you keep your hand cards.\n⚠ You still pass the round after using it.",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "escape_pods_rules": {
+    "title": "ESCAPE PODS",
+    "text": "HOW ESCAPE PODS WORK\n\nUnlock conditions:\n• First character dies → ALL pods unlock.\n• Self-Destruct hits yellow space → pods unlock.\n• Manual action in Evacuation Section Room.\n\nWhen you ENTER an Escape Pod:\n• You are in the pod — you pass your turn.\n\nNext turn start, choose ONE:\n1. LAUNCH — pod launches, you escape. Done.\n2. WAIT — pass turn again, decide next turn.\n3. LEAVE — exit pod freely (no action cost),\n   placed in Evacuation Section, play full round.\n\n⚠ Malfunction marker on Evacuation Section:\n  only blocks entering pods — does NOT affect\n  characters already inside.",
+    "options": [
+      {
+        "label": "WIN / LOSE",
+        "target": "game_end_win_lose"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "hibernation_rules": {
+    "title": "HIBERNATION",
+    "text": "HIBERNATION — sleeping through the crisis\n\nAccess:\n• Can only enter when Time Track reaches\n  a BLUE SPACE.\n\nWhen hibernating:\n• Character is out of the game.\n• Cannot take actions or be targeted.\n• Fire in the Hibernatorium does NOT damage them.\n• SELF-DESTRUCT still kills hibernating characters\n  if the ship explodes.\n\nEND GAME — Hibernating character survival checks:\n1. ENGINE CHECK: if 2+ engines damaged → die.\n2. COORDINATES CHECK: if ship not headed to Earth\n   → die (unless Mars objective).\n3. CONTAMINATION CHECK: scan all cards.\n   If infected → die.\n4. OBJECTIVE CHECK: reveal and check conditions.",
+    "options": [
+      {
+        "label": "END GAME CHECKS",
+        "target": "game_end_win_lose"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "self_destruct_rules": {
+    "title": "SELF-DESTRUCT SEQUENCE",
+    "text": "SELF-DESTRUCT\n\nActivation:\n• Triggered by an Event card or player action.\n• A Self-Destruct Track begins counting down.\n\nMilestones:\n• YELLOW SPACE reached → All Escape Pods unlock\n  automatically. Characters can no longer stop it.\n• FINAL RED SPACE reached → Ship explodes.\n  All characters on board die.\n\nALSO destroys ship when:\n• 9th FIRE MARKER placed on board.\n• 9th MALFUNCTION MARKER placed on board.\n\n⚠ Self-Destruct started during turn 5 or earlier:\n  Ship explodes when the last player escapes,\n  hibernates, or dies — if nobody stopped it.",
+    "options": [
+      {
+        "label": "ESCAPE PODS",
+        "target": "escape_pods_rules"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "intruder_attack_target": {
+    "title": "INTRUDER ATTACK TARGETING",
+    "text": "When an intruder attacks (Event Phase or escape),\nwhich character is targeted?\n\nTARGET = the character with the FEWEST\nACTION CARDS in their hand.\n\nIf tied → the FIRST PLAYER among those tied\nis the target.\n\nMULTIPLE INTRUDERS during escape:\n• Draw 1 Attack Card per intruder.\n• Resolve in order: Queen → Breeder → Adult → Larva.\n\nINTRUDER RETREAT:\n• Some attack cards show a RETREAT symbol.\n• The intruder flees via the corridor designated\n  by the current Event Card.\n• If the corridor has a CLOSED DOOR:\n  The door is destroyed — intruder stays in room.",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "victory_engines": {
+    "title": "① ENGINE CHECK",
+    "text": "Reveal all top ENGINE tokens.\n\nCount how many show DAMAGED status.\n\nResult:\n• 0 or 1 DAMAGED → engines OK, ship survives.\n• 2 or 3 DAMAGED → ship EXPLODES.\n  All hibernating characters DIE.\n  (Escaped characters in pods survive.)\n\n⚠ Malfunction markers on Engine Rooms only\n  prevent changing engine status — they do NOT\n  themselves damage the engines.",
+    "options": [
+      {
+        "label": "ENGINES OK → COORDINATES CHECK",
+        "target": "victory_coordinates"
+      },
+      {
+        "label": "SHIP EXPLODES",
+        "target": "victory_ship_explodes"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "victory_ship_explodes": {
+    "title": "SHIP EXPLODES",
+    "text": "The ship explodes!\n\n• All hibernating characters DIE.\n• Characters in launched Escape Pods survive.\n• Characters on board die.\n\n⚠ Blowing up the ship counts as fulfilling\n  objectives for:\n  • Killing the Queen (if she was on board)\n  • Destroying the Nest\n\nProceed to Objective Check for surviving characters.",
+    "options": [
+      {
+        "label": "OBJECTIVE CHECK",
+        "target": "victory_objectives"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "victory_coordinates": {
+    "title": "② COORDINATES CHECK",
+    "text": "Reveal the COORDINATES card.\n\nWhere is the ship headed?\n\n• Headed to EARTH → hibernating characters survive.\n• NOT headed to Earth → all hibernating characters\n  DIE (lost in space).\n• Exception: characters with MARS objective may\n  survive if headed to Mars (check card).\n\n⚠ Malfunction on the Cockpit only prevents\n  changing coordinates — does not override\n  whatever coordinates were already set.",
+    "options": [
+      {
+        "label": "SHIP HEADED TO EARTH → CONTAMINATION CHECK",
+        "target": "victory_contamination"
+      },
+      {
+        "label": "SHIP LOST — HIBERNATING CHARS DIE",
+        "target": "victory_objectives"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "victory_contamination": {
+    "title": "③ CONTAMINATION CHECK",
+    "text": "Each surviving character scans contamination.\n\nSteps per character:\n1. If they have a LARVA on their board:\n   → Skip contamination check (larva is present).\n   → Character DIES.\n\n2. If they have contamination cards:\n   → Shuffle all contamination cards together.\n   → If at least 1 is INFECTED: draw 4 cards.\n     If any drawn card = contamination card → DIE.\n     If no contamination cards drawn → SURVIVE.\n   → If NONE are infected → SURVIVE.\n\n3. No contamination cards → SURVIVE automatically.",
+    "options": [
+      {
+        "label": "OBJECTIVE CHECK →",
+        "target": "victory_objectives"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "victory_objectives": {
+    "title": "④ OBJECTIVE CHECK",
+    "text": "Each surviving player reveals their Objective card.\n\nTo WIN, a player must:\n1. Fulfill ALL requirements on their Objective card.\n2. Have SURVIVED (either hibernating with ship\n   headed to Earth, or escaped in a pod).\n\nRemember: Nemesis is SEMI-COOPERATIVE.\n• Player A can WIN while Player B LOSES.\n• No players winning is also a valid outcome.\n\nCommon objectives:\n  Escape Alive     → Be in a launched pod\n  Kill the Queen   → Queen dead at game end\n  Destroy the Ship → Self-Destruct activated\n  Send Signal      → Used Comms Room action\n  Only Survivor    → No other character survives\n  Cannot Survive   → Your character must be dead",
+    "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  }
+};
+
+// ── Navigation state ────────────────────────────────────────────────────────
+let current  = "home";
+let history  = [];
+
+// ── Navigate to a screen ────────────────────────────────────────────────────
+function goTo(id, addHistory = true) {
+  if (!SCREENS[id]) id = "home";
+  if (addHistory && id !== current) history.push(current);
+  if (history.length > 40) history.shift();
+  current = id;
+  render();
+  document.getElementById("main-content").scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  if (history.length) goTo(history.pop(), false);
+  else goTo("home", false);
+}
+
+function goHome() { goTo("home"); }
+
+// ── Render current screen ────────────────────────────────────────────────────
+function render() {
+  const s = SCREENS[current];
+  if (!s) return;
+
+  document.getElementById("screen-title").textContent = s.title;
+  document.getElementById("screen-text").textContent  = s.text;
+  document.getElementById("breadcrumb").textContent   = "/" + current;
+
+  const container = document.getElementById("options");
+  container.innerHTML = "";
+
+  s.options.forEach(opt => {
+    const isNav = opt.label === "HOME" || opt.label === "BACK" || opt.target === "home";
+    const btn   = document.createElement("button");
+    btn.className  = "opt-btn" + (isNav ? " nav" : "");
+    btn.textContent = "  " + opt.label;
+    btn.onclick     = () => goTo(opt.target);
+    container.appendChild(btn);
+  });
+}
+
+// ── Keyboard shortcuts ───────────────────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  if (e.key === "Backspace" && e.target.tagName !== "INPUT") goBack();
+  if (e.key === "Escape") goHome();
+});
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+goTo("home", false);
+</script>
+</body>
+</html>

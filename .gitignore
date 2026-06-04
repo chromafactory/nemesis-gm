@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+convert_to_web.py
+nemesis_gm.py
+Run Nemesis GM.bat
+*.pdf
