@@ -73,44 +73,10 @@
   main {
     flex: 1;
     overflow-y: auto;
-    padding: 20px 16px 100px;
+    padding: 20px 16px 32px;
     max-width: 720px;
     width: 100%;
     margin: 0 auto;
-  }
-
-  /* ── sticky bottom nav ── */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--header);
-    border-top: 2px solid var(--accent);
-    display: flex;
-    gap: 8px;
-    padding: 10px 16px;
-    justify-content: flex-end;
-    z-index: 100;
-  }
-  .bottom-nav button {
-    background: transparent;
-    border: 1px solid #3a1030;
-    color: var(--text-dim);
-    font-family: inherit;
-    font-size: 0.75rem;
-    padding: 8px 18px;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: all .15s;
-    flex: 1;
-    max-width: 160px;
-  }
-  .bottom-nav button:hover,
-  .bottom-nav button:active {
-    color: var(--text-hi);
-    border-color: var(--accent2);
-    background: #1a0a20;
   }
 
   /* ── screen title ── */
@@ -223,11 +189,6 @@
 </main>
 
 <footer id="breadcrumb">/home</footer>
-
-<div class="bottom-nav">
-  <button onclick="goBack()">◀ BACK</button>
-  <button onclick="goHome()">⌂ HOME</button>
-</div>
 
 <script>
 // ── Screen data (auto-generated) ────────────────────────────────────────────
@@ -1265,24 +1226,20 @@ const SCREENS = {
     "text": "What combat situation are you in?",
     "options": [
       {
-        "label": "PLAYER ATTACKS INTRUDER",
-        "target": "combat_player_attacks"
+        "label": "ROLL RED DIE — PLAYER ATTACKS",
+        "target": "dice_attack_type"
       },
       {
         "label": "INTRUDER ATTACKS PLAYER",
         "target": "combat_intruder_attacks"
       },
       {
-        "label": "MELEE WEAPON RULES",
-        "target": "combat_melee"
-      },
-      {
-        "label": "RANGED WEAPON RULES",
-        "target": "combat_ranged"
-      },
-      {
         "label": "KILLING AN INTRUDER",
         "target": "combat_kill"
+      },
+      {
+        "label": "CHARACTER / WEAPON ABILITIES",
+        "target": "combat_player_attacks"
       },
       {
         "label": "HOME",
@@ -1291,8 +1248,8 @@ const SCREENS = {
     ]
   },
   "combat_player_attacks": {
-    "title": "PLAYER ATTACKS — SELECT WEAPON",
-    "text": "COST: 1 Action Token\n\nAre you using a special weapon or character\ncombat ability?",
+    "title": "PLAYER ATTACKS — ABILITIES",
+    "text": "Are you using a special weapon or character\ncombat ability?",
     "options": [
       {
         "label": "SOLDIER: TAKING AIM  (reroll 1 die)",
@@ -1319,12 +1276,8 @@ const SCREENS = {
         "target": "weapon_flamethrower"
       },
       {
-        "label": "STANDARD MELEE WEAPON",
-        "target": "combat_melee"
-      },
-      {
-        "label": "STANDARD RANGED WEAPON",
-        "target": "combat_ranged"
+        "label": "NO ABILITY — ROLL RED DIE",
+        "target": "dice_attack_type"
       },
       {
         "label": "BACK",
@@ -1332,21 +1285,95 @@ const SCREENS = {
       }
     ]
   },
-  "combat_melee": {
-    "title": "MELEE — DRAW CONTAMINATION FIRST",
-    "text": "MELEE WEAPONS — No ammo cost.\nMust be in the SAME ROOM as the intruder.\n\n⚠ BEFORE rolling: Draw 1 CONTAMINATION CARD.\n  Keep it face down — you risk infection.\n\nNow check your weapon card.\nHow many dice does it show?",
+  "dice_attack_type": {
+    "title": "ROLL RED DIE — WEAPON TYPE",
+    "text": "Which type of weapon are you attacking with?",
     "options": [
       {
-        "label": "1 DIE",
-        "target": "roll_melee_1"
+        "label": "MELEE  (knife, axe, wrench…)",
+        "target": "dice_melee_contamination"
       },
       {
-        "label": "2 DICE",
-        "target": "roll_melee_2"
+        "label": "RANGED  (pistol, rifle, shotgun…)",
+        "target": "dice_ranged_select"
       },
       {
-        "label": "3 DICE",
-        "target": "roll_melee_3"
+        "label": "BACK",
+        "target": "combat_menu"
+      }
+    ]
+  },
+  "dice_melee_contamination": {
+    "title": "MELEE — DRAW CONTAMINATION CARD",
+    "text": "BEFORE rolling, draw 1 CONTAMINATION CARD.\nKeep it face down — you risk infection.\n\nAlso discard ammo if your weapon requires it.\n\nWhich intruder are you attacking?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "dice_roll_larva_melee"
+      },
+      {
+        "label": "CREEPER",
+        "target": "dice_roll_creeper_melee"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "dice_roll_adult_melee"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "dice_roll_queen_melee"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_attack_type"
+      }
+    ]
+  },
+  "dice_ranged_select": {
+    "title": "RANGED — SELECT INTRUDER",
+    "text": "Discard the required ammo tokens now.\n\nWhich intruder are you shooting?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "dice_roll_larva_ranged"
+      },
+      {
+        "label": "CREEPER",
+        "target": "dice_roll_creeper_ranged"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "dice_roll_adult_ranged"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "dice_roll_queen_ranged"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_attack_type"
+      }
+    ]
+  },
+  "combat_melee": {
+    "title": "MELEE ATTACK",
+    "text": "Selecting melee — which intruder?",
+    "options": [
+      {
+        "label": "LARVA",
+        "target": "dice_roll_larva_melee"
+      },
+      {
+        "label": "CREEPER",
+        "target": "dice_roll_creeper_melee"
+      },
+      {
+        "label": "ADULT / HUNTER",
+        "target": "dice_roll_adult_melee"
+      },
+      {
+        "label": "QUEEN / BREEDER",
+        "target": "dice_roll_queen_melee"
       },
       {
         "label": "BACK",
@@ -4756,6 +4783,672 @@ const SCREENS = {
     "title": "④ OBJECTIVE CHECK",
     "text": "Each surviving player reveals their Objective card.\n\nTo WIN, a player must:\n1. Fulfill ALL requirements on their Objective card.\n2. Have SURVIVED (either hibernating with ship\n   headed to Earth, or escaped in a pod).\n\nRemember: Nemesis is SEMI-COOPERATIVE.\n• Player A can WIN while Player B LOSES.\n• No players winning is also a valid outcome.\n\nCommon objectives:\n  Escape Alive     → Be in a launched pod\n  Kill the Queen   → Queen dead at game end\n  Destroy the Ship → Self-Destruct activated\n  Send Signal      → Used Comms Room action\n  Only Survivor    → No other character survives\n  Cannot Survive   → Your character must be dead",
     "options": [
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_roll_larva_melee": {
+    "title": "LARVA — MELEE — ROLL DIE",
+    "text": "Contamination card already drawn. Roll now.\n\nThe die has 6 faces:\n  ⬛ BLACK   ·  🌑 1 TAIL   ·  🌑🌑 2 TAILS\n  ✕ 1 HIT   ·  ✕✕ 2 HITS\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "⬛  BLACK   (blank)",
+        "target": "dice_black_larva_melee"
+      },
+      {
+        "label": "🌑  1 TAIL",
+        "target": "dice_1tail_larva"
+      },
+      {
+        "label": "🌑🌑  2 TAILS",
+        "target": "dice_2tail_larva"
+      },
+      {
+        "label": "✕   1 HIT",
+        "target": "dice_1hit_larva"
+      },
+      {
+        "label": "✕✕  2 HITS",
+        "target": "dice_2hit_larva"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_melee_contamination"
+      }
+    ]
+  },
+  "dice_roll_larva_ranged": {
+    "title": "LARVA — RANGED — ROLL DIE",
+    "text": "Ammo discarded. Roll now.\n\nThe die has 6 faces:\n  ⬛ BLACK   ·  🌑 1 TAIL   ·  🌑🌑 2 TAILS\n  ✕ 1 HIT   ·  ✕✕ 2 HITS\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "⬛  BLACK   (blank)",
+        "target": "dice_black_larva_ranged"
+      },
+      {
+        "label": "🌑  1 TAIL",
+        "target": "dice_1tail_larva"
+      },
+      {
+        "label": "🌑🌑  2 TAILS",
+        "target": "dice_2tail_larva"
+      },
+      {
+        "label": "✕   1 HIT",
+        "target": "dice_1hit_larva"
+      },
+      {
+        "label": "✕✕  2 HITS",
+        "target": "dice_2hit_larva"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_ranged_select"
+      }
+    ]
+  },
+  "dice_black_larva_melee": {
+    "title": "⬛ MELEE MISS — LARVA",
+    "text": "You missed!\n\n⚠ MELEE MISS PENALTY:\nYou take 1 SERIOUS WOUND.\n1. Draw 1 Serious Wound card — apply it now.\n\nNo damage dealt to the Larva.\n\nThe Larva now counter-attacks.\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive) → counter-attack",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "3  (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_black_larva_ranged": {
+    "title": "⬛ RANGED MISS — LARVA",
+    "text": "Shot missed — no damage to the Larva.\n\n✓ No penalty to you for a ranged miss.\n\nThe Larva now counter-attacks.\nDraw 1 Intruder Attack Card.",
+    "options": [
+      {
+        "label": "RESOLVE COUNTER-ATTACK",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_1tail_larva": {
+    "title": "🌑 1 TAIL — LARVA",
+    "text": "The Larva scratches you as you swing!\n\nResult:\n• YOU take 1 LIGHT WOUND.\n  Place 1 marker on your Light Wound space.\n  If both spaces are full → convert to Serious Wound.\n• The Larva takes NO damage.\n\nThe Larva then counter-attacks.\nAre both your Light Wound spaces now full?",
+    "options": [
+      {
+        "label": "NO — SPACES AVAILABLE",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "YES — CONVERT TO SERIOUS WOUND",
+        "target": "wound_convert_serious"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2tail_larva": {
+    "title": "🌑🌑 2 TAILS — LARVA",
+    "text": "The Larva claws you hard!\n\nResult:\n• YOU take 1 LIGHT WOUND.\n  Place 1 marker on your Light Wound space.\n  If both spaces are full → convert to Serious Wound.\n• The Larva takes NO damage.\n\nThe Larva then counter-attacks.\nAre both your Light Wound spaces now full?",
+    "options": [
+      {
+        "label": "NO — SPACES AVAILABLE",
+        "target": "atk_counter_larva"
+      },
+      {
+        "label": "YES — CONVERT TO SERIOUS WOUND",
+        "target": "wound_convert_serious"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_1hit_larva": {
+    "title": "✕ 1 HIT — LARVA",
+    "text": "Direct hit on the Larva!\n\nLARVA takes 1 injury.\n\n✓ 1 injury is enough to kill a Larva.\nThe Larva is DEAD — remove it from the board.",
+    "options": [
+      {
+        "label": "LARVA KILLED",
+        "target": "combat_kill"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2hit_larva": {
+    "title": "✕✕ 2 HITS — LARVA",
+    "text": "Powerful hit on the Larva!\n\nLARVA takes 2 injuries.\n\n✓ 1 injury is enough to kill a Larva.\nThe Larva is DEAD — remove it from the board.",
+    "options": [
+      {
+        "label": "LARVA KILLED",
+        "target": "combat_kill"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_roll_creeper_melee": {
+    "title": "CREEPER — MELEE — ROLL DIE",
+    "text": "Contamination card already drawn. Roll now.\n\nThe die has 6 faces:\n  ⬛ BLACK   ·  🌑 1 TAIL   ·  🌑🌑 2 TAILS\n  ✕ 1 HIT   ·  ✕✕ 2 HITS\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "⬛  BLACK   (blank)",
+        "target": "dice_black_creeper_melee"
+      },
+      {
+        "label": "🌑  1 TAIL",
+        "target": "dice_1tail_creeper"
+      },
+      {
+        "label": "🌑🌑  2 TAILS",
+        "target": "dice_2tail_creeper"
+      },
+      {
+        "label": "✕   1 HIT",
+        "target": "dice_1hit_creeper"
+      },
+      {
+        "label": "✕✕  2 HITS",
+        "target": "dice_2hit_creeper"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_melee_contamination"
+      }
+    ]
+  },
+  "dice_roll_creeper_ranged": {
+    "title": "CREEPER — RANGED — ROLL DIE",
+    "text": "Ammo discarded. Roll now.\n\nThe die has 6 faces:\n  ⬛ BLACK   ·  🌑 1 TAIL   ·  🌑🌑 2 TAILS\n  ✕ 1 HIT   ·  ✕✕ 2 HITS\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "⬛  BLACK   (blank)",
+        "target": "dice_black_creeper_ranged"
+      },
+      {
+        "label": "🌑  1 TAIL",
+        "target": "dice_1tail_creeper"
+      },
+      {
+        "label": "🌑🌑  2 TAILS",
+        "target": "dice_2tail_creeper"
+      },
+      {
+        "label": "✕   1 HIT",
+        "target": "dice_1hit_creeper"
+      },
+      {
+        "label": "✕✕  2 HITS",
+        "target": "dice_2hit_creeper"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_ranged_select"
+      }
+    ]
+  },
+  "dice_black_creeper_melee": {
+    "title": "⬛ MELEE MISS — CREEPER",
+    "text": "You missed!\n\n⚠ MELEE MISS PENALTY:\nYou take 1 SERIOUS WOUND.\n1. Draw 1 Serious Wound card — apply it now.\n\nNo damage dealt to the Creeper.\n\nThe Creeper now counter-attacks.\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive) → counter-attack",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "3  (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_black_creeper_ranged": {
+    "title": "⬛ RANGED MISS — CREEPER",
+    "text": "Shot missed — no damage to the Creeper.\n\n✓ No penalty to you for a ranged miss.\n\nThe Creeper now counter-attacks.\nDraw 1 Intruder Attack Card.",
+    "options": [
+      {
+        "label": "RESOLVE COUNTER-ATTACK",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_1tail_creeper": {
+    "title": "🌑 1 TAIL — CREEPER",
+    "text": "The Creeper gashes you!\n\nResult:\n• YOU take 1 LIGHT WOUND.\n  Place 1 marker on your Light Wound space.\n  If both spaces are full → convert to Serious Wound.\n• The Creeper takes NO damage.\n\nThe Creeper then counter-attacks.\nAre both your Light Wound spaces now full?",
+    "options": [
+      {
+        "label": "NO — SPACES AVAILABLE",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "YES — CONVERT TO SERIOUS WOUND",
+        "target": "wound_convert_serious"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2tail_creeper": {
+    "title": "🌑🌑 2 TAILS — CREEPER",
+    "text": "The Creeper mauls you badly!\n\nResult:\n• YOU take 2 LIGHT WOUNDS.\n  Place markers on both Light Wound spaces.\n  Both spaces are now full → SERIOUS WOUND triggered!\n  → Clear both spaces, keep 1 marker.\n  → Draw 1 Serious Wound card — apply now.\n• The Creeper takes NO damage.\n\nThe Creeper then counter-attacks.\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive) → counter-attack",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "3  (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_1hit_creeper": {
+    "title": "✕ 1 HIT — CREEPER",
+    "text": "You hit the Creeper! 1 injury dealt.\n\nDEATH CHECK:\nDraw 1 Intruder Attack Card.\nLook at the BLOOD DROP value on the card.\n\n• If 1 ≥ blood value → CREEPER DIES.\n• If 1 < blood value → CREEPER SURVIVES.\n  → Counter-attacks.\n\nWhat was the result?",
+    "options": [
+      {
+        "label": "CREEPER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CREEPER SURVIVES — COUNTER",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2hit_creeper": {
+    "title": "✕✕ 2 HITS — CREEPER",
+    "text": "Solid hit on the Creeper! 2 injuries dealt.\n\nDEATH CHECK:\nDraw 1 Intruder Attack Card.\nLook at the BLOOD DROP value on the card.\n\n• If 2 ≥ blood value → CREEPER DIES.\n• If 2 < blood value → CREEPER SURVIVES.\n  → Counter-attacks.\n\nWhat was the result?",
+    "options": [
+      {
+        "label": "CREEPER DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "CREEPER SURVIVES — COUNTER",
+        "target": "atk_counter_creeper"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_roll_adult_melee": {
+    "title": "ADULT — MELEE — ROLL DIE",
+    "text": "Contamination card already drawn. Roll now.\n\nThe die has 6 faces:\n  ⬛ BLACK   ·  🌑 1 TAIL   ·  🌑🌑 2 TAILS\n  ✕ 1 HIT   ·  ✕✕ 2 HITS\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "⬛  BLACK   (blank)",
+        "target": "dice_black_adult_melee"
+      },
+      {
+        "label": "🌑  1 TAIL",
+        "target": "dice_1tail_adult"
+      },
+      {
+        "label": "🌑🌑  2 TAILS",
+        "target": "dice_2tail_adult"
+      },
+      {
+        "label": "✕   1 HIT",
+        "target": "dice_1hit_adult"
+      },
+      {
+        "label": "✕✕  2 HITS",
+        "target": "dice_2hit_adult_melee"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_melee_contamination"
+      }
+    ]
+  },
+  "dice_roll_adult_ranged": {
+    "title": "ADULT — RANGED — ROLL DIE",
+    "text": "Ammo discarded. Roll now.\n\nThe die has 6 faces:\n  ⬛ BLACK   ·  🌑 1 TAIL   ·  🌑🌑 2 TAILS\n  ✕ 1 HIT   ·  ✕✕ 2 HITS\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "⬛  BLACK   (blank)",
+        "target": "dice_black_adult_ranged"
+      },
+      {
+        "label": "🌑  1 TAIL",
+        "target": "dice_1tail_adult"
+      },
+      {
+        "label": "🌑🌑  2 TAILS",
+        "target": "dice_2tail_adult"
+      },
+      {
+        "label": "✕   1 HIT",
+        "target": "dice_1hit_adult"
+      },
+      {
+        "label": "✕✕  2 HITS",
+        "target": "dice_2hit_adult_ranged"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_ranged_select"
+      }
+    ]
+  },
+  "dice_black_adult_melee": {
+    "title": "⬛ MELEE MISS — ADULT",
+    "text": "You missed — and the Adult punishes you!\n\n⚠ MELEE MISS PENALTY:\nYou take 1 SERIOUS WOUND.\n1. Draw 1 Serious Wound card — apply it now.\n\nNo damage dealt to the Adult.\n\nThe Adult now counter-attacks.\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive) → counter-attack",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "3  (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_black_adult_ranged": {
+    "title": "⬛ RANGED MISS — ADULT",
+    "text": "Shot missed — no damage to the Adult.\n\n✓ No penalty to you for a ranged miss.\n\nThe Adult now counter-attacks.\nDraw 1 Intruder Attack Card.",
+    "options": [
+      {
+        "label": "RESOLVE COUNTER-ATTACK",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_1tail_adult": {
+    "title": "🌑 1 TAIL — ADULT",
+    "text": "The Adult slashes you!\n\nResult:\n• YOU take 1 LIGHT WOUND.\n  Place 1 marker on your Light Wound space.\n  If both spaces are full → convert to Serious Wound.\n• The Adult takes NO damage.\n\nThe Adult then counter-attacks.\nAre both your Light Wound spaces now full?",
+    "options": [
+      {
+        "label": "NO — SPACES AVAILABLE",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "YES — CONVERT TO SERIOUS WOUND",
+        "target": "wound_convert_serious"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2tail_adult": {
+    "title": "🌑🌑 2 TAILS — ADULT",
+    "text": "The Adult tears into you — serious damage!\n\nResult:\n• YOU take 1 SERIOUS WOUND.\n  Draw 1 Serious Wound card — apply it now.\n• The Adult takes NO damage.\n\nThe Adult then counter-attacks.\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive) → counter-attack",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "3  (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_1hit_adult": {
+    "title": "✕ 1 HIT — ADULT",
+    "text": "You hit the Adult! 1 injury dealt.\n\nDEATH CHECK:\nDraw 1 Intruder Attack Card.\nLook at the BLOOD DROP value on the card.\n\n• If 1 ≥ blood value → ADULT DIES.\n• If 1 < blood value → ADULT SURVIVES.\n  → Counter-attacks.\n\nWhat was the result?",
+    "options": [
+      {
+        "label": "ADULT DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "ADULT SURVIVES — COUNTER",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2hit_adult_melee": {
+    "title": "✕✕ 2 HITS — ADULT (MELEE)",
+    "text": "Strong hit on the Adult! 2 injuries dealt.\n\nDEATH CHECK:\nDraw 1 Intruder Attack Card.\nLook at the BLOOD DROP value on the card.\n\n• If 2 ≥ blood value → ADULT DIES.\n• If 2 < blood value → ADULT SURVIVES.\n  → Counter-attacks.\n\nWhat was the result?",
+    "options": [
+      {
+        "label": "ADULT DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "ADULT SURVIVES — COUNTER",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2hit_adult_ranged": {
+    "title": "✕✕ 2 HITS — ADULT (RANGED)",
+    "text": "Strong hit on the Adult! 2 injuries dealt.\n\nDEATH CHECK:\nDraw 1 Intruder Attack Card.\nLook at the BLOOD DROP value on the card.\n\n• If 2 ≥ blood value → ADULT DIES.\n• If 2 < blood value → ADULT SURVIVES.\n  → Counter-attacks.\n\nWhat was the result?",
+    "options": [
+      {
+        "label": "ADULT DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "ADULT SURVIVES — COUNTER",
+        "target": "atk_counter_adult"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_roll_queen_melee": {
+    "title": "QUEEN — MELEE — ROLL DIE",
+    "text": "Contamination card already drawn. Roll now.\n\n⚠ MELEE vs QUEEN: Maximum 1 injury per hit,\n  regardless of the die result.\n\nThe die has 6 faces:\n  ⬛ BLACK   ·  🌑 1 TAIL   ·  🌑🌑 2 TAILS\n  ✕ 1 HIT   ·  ✕✕ 2 HITS\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "⬛  BLACK   (blank)",
+        "target": "dice_black_queen_melee"
+      },
+      {
+        "label": "🌑  1 TAIL",
+        "target": "dice_1tail_queen"
+      },
+      {
+        "label": "🌑🌑  2 TAILS",
+        "target": "dice_2tail_queen"
+      },
+      {
+        "label": "✕   1 HIT",
+        "target": "dice_1hit_queen"
+      },
+      {
+        "label": "✕✕  2 HITS  (counts as 1 vs Queen — melee cap)",
+        "target": "dice_1hit_queen"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_melee_contamination"
+      }
+    ]
+  },
+  "dice_roll_queen_ranged": {
+    "title": "QUEEN — RANGED — ROLL DIE",
+    "text": "Ammo discarded. Roll now.\n\nThe die has 6 faces:\n  ⬛ BLACK   ·  🌑 1 TAIL   ·  🌑🌑 2 TAILS\n  ✕ 1 HIT   ·  ✕✕ 2 HITS\n\nWhat did you roll?",
+    "options": [
+      {
+        "label": "⬛  BLACK   (blank)",
+        "target": "dice_black_queen_ranged"
+      },
+      {
+        "label": "🌑  1 TAIL",
+        "target": "dice_1tail_queen"
+      },
+      {
+        "label": "🌑🌑  2 TAILS",
+        "target": "dice_2tail_queen"
+      },
+      {
+        "label": "✕   1 HIT",
+        "target": "dice_1hit_queen"
+      },
+      {
+        "label": "✕✕  2 HITS",
+        "target": "dice_2hit_queen_ranged"
+      },
+      {
+        "label": "BACK",
+        "target": "dice_ranged_select"
+      }
+    ]
+  },
+  "dice_black_queen_melee": {
+    "title": "⬛ MELEE MISS — QUEEN",
+    "text": "You missed the Queen — she makes you pay!\n\n⚠ MELEE MISS PENALTY:\nYou take 1 SERIOUS WOUND.\n1. Draw 1 Serious Wound card — apply it now.\n\nNo damage dealt to the Queen.\n\nThe Queen now counter-attacks.\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive) → counter-attack",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "3  (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_black_queen_ranged": {
+    "title": "⬛ RANGED MISS — QUEEN",
+    "text": "Shot missed — no damage to the Queen.\n\n✓ No penalty to you for a ranged miss.\n\nThe Queen now counter-attacks.\nDraw 1 Intruder Attack Card.",
+    "options": [
+      {
+        "label": "RESOLVE COUNTER-ATTACK",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_1tail_queen": {
+    "title": "🌑 1 TAIL — QUEEN",
+    "text": "The Queen grazes you!\n\nResult:\n• YOU take 1 LIGHT WOUND.\n  Place 1 marker on your Light Wound space.\n  If both spaces are full → convert to Serious Wound.\n• The Queen takes NO damage.\n\nThe Queen then counter-attacks.\nAre both your Light Wound spaces now full?",
+    "options": [
+      {
+        "label": "NO — SPACES AVAILABLE",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "YES — CONVERT TO SERIOUS WOUND",
+        "target": "wound_convert_serious"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2tail_queen": {
+    "title": "🌑🌑 2 TAILS — QUEEN",
+    "text": "The Queen strikes with full force!\n\nResult:\n• YOU take 1 SERIOUS WOUND.\n  Draw 1 Serious Wound card — apply it now.\n• The Queen takes NO damage.\n\nThe Queen then counter-attacks.\nHow many Serious Wound cards do you now have?",
+    "options": [
+      {
+        "label": "1 or 2  (still alive) → counter-attack",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "3  (you die)",
+        "target": "wound_death"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_1hit_queen": {
+    "title": "✕ 1 HIT — QUEEN",
+    "text": "You hit the Queen! 1 injury dealt.\n\nDEATH CHECK (Queen uses 2 cards):\nDraw 2 Intruder Attack Cards.\nAdd BOTH blood drop values together.\n\n• If 1 ≥ combined value → QUEEN DIES.\n• If 1 < combined value → QUEEN SURVIVES.\n  → Counter-attacks.\n\nWhat was the result?",
+    "options": [
+      {
+        "label": "QUEEN DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "QUEEN SURVIVES — COUNTER",
+        "target": "atk_counter_queen"
+      },
+      {
+        "label": "HOME",
+        "target": "home"
+      }
+    ]
+  },
+  "dice_2hit_queen_ranged": {
+    "title": "✕✕ 2 HITS — QUEEN (RANGED)",
+    "text": "Two shots hit the Queen! 2 injuries dealt.\n\nDEATH CHECK (Queen uses 2 cards):\nDraw 2 Intruder Attack Cards.\nAdd BOTH blood drop values together.\n\n• If 2 ≥ combined value → QUEEN DIES.\n• If 2 < combined value → QUEEN SURVIVES.\n  → Counter-attacks.\n\nWhat was the result?",
+    "options": [
+      {
+        "label": "QUEEN DEAD",
+        "target": "combat_kill"
+      },
+      {
+        "label": "QUEEN SURVIVES — COUNTER",
+        "target": "atk_counter_queen"
+      },
       {
         "label": "HOME",
         "target": "home"
